@@ -1,0 +1,144 @@
+{% extends 'publication/base.html' %}
+{% load publication_tags %}
+
+{% block title %}{{ publication.titre }} - Plateforme Académique{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Publication principale -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">{{ publication.titre }}</h1>
+                <div>
+                    <span class="badge bg-primary fs-6">{{ publication.type_contenu|title }}</span>
+                    {% if not publication.est_publie %}
+                    <span class="badge bg-warning">Brouillon</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Métadonnées -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="publication-meta">
+                            <p><i class="fas fa-user text-primary"></i> <strong>Auteur :</strong> {{ publication.auteur.username }}</p>
+                            <p><i class="fas fa-book text-primary"></i> <strong>Matière :</strong> {{ publication.matiere }}</p>
+                            <p><i class="fas fa-university text-primary"></i> <strong>Université :</strong> {{ publication.universite }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="publication-meta">
+                            <p><i class="fas fa-tag text-primary"></i> <strong>Thème :</strong> {{ publication.theme }}</p>
+                            <p><i class="fas fa-calendar text-primary"></i> <strong>Publié le :</strong> {{ publication.date_publication|date:"d/m/Y à H:i" }}</p>
+                            {% if publication.date_modification != publication.date_publication %}
+                            <p><i class="fas fa-edit text-primary"></i> <strong>Modifié le :</strong> {{ publication.date_modification|date:"d/m/Y à H:i" }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Description -->
+                <div class="mb-4">
+                    <h4><i class="fas fa-align-left"></i> Description</h4>
+                    <p class="lead">{{ publication.description|linebreaks }}</p>
+                </div>
+                
+                <!-- Mots-clés -->
+                {% if publication.mots_cles %}
+                <div class="mb-4">
+                    <h4><i class="fas fa-tags"></i> Mots-clés</h4>
+                    {% for mot in publication.mots_cles|split:"," %}
+                    <span class="badge bg-secondary me-2 mb-2">{{ mot|strip }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Fichier -->
+                {% if publication.fichier %}
+                <div class="mb-4">
+                    <h4><i class="fas fa-file"></i> Fichier attaché</h4>
+                    <div class="alert alert-info">
+                        <i class="fas fa-download"></i>
+                        <a href="{{ publication.fichier.url }}" class="btn btn-success ms-2" target="_blank">
+                            <i class="fas fa-download"></i> Télécharger le fichier
+                        </a>
+                        <small class="text-muted ms-2">({{ publication.fichier.size|filesizeformat }})</small>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Actions -->
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <a href="{% url 'publication:list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Retour à la liste
+                        </a>
+                    </div>
+                    <div>
+                        {% if user.is_authenticated and publication.auteur == user or user.is_staff %}
+                        <a href="{% url 'publication:update' publication.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        <a href="{% url 'publication:delete' publication.pk %}" class="btn btn-outline-danger">
+                            <i class="fas fa-trash"></i> Supprimer
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Publications similaires -->
+        {% if similar_publications %}
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-bookmark"></i> Publications similaires</h5>
+            </div>
+            <div class="card-body">
+                {% for similar in similar_publications %}
+                <div class="mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                    <h6 class="card-title">
+                        <a href="{% url 'publication:detail' similar.pk %}" class="text-decoration-none">
+                            {{ similar.titre|truncatechars:40 }}
+                        </a>
+                    </h6>
+                    <p class="card-text small text-muted">
+                        {{ similar.description|truncatechars:80 }}
+                    </p>
+                    <div class="small text-muted">
+                        <i class="fas fa-user"></i> {{ similar.auteur.username }}
+                        <span class="ms-2"><i class="fas fa-calendar"></i> {{ similar.date_publication|date:"d/m/Y" }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Statistiques -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-chart-bar"></i> Informations</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border-end">
+                            <h6 class="text-primary">{{ publication.type_contenu|title }}</h6>
+                            <small class="text-muted">Type de contenu</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <h6 class="text-success">{{ publication.matiere }}</h6>
+                        <small class="text-muted">Matière</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
