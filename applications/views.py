@@ -2,6 +2,11 @@ from django.http import JsonResponse
 from django.db.models import Q
 from .models import ContenuPedagogique
 import json
+from django.http import HttpResponse
+
+def accueil(request):
+    return HttpResponse("Bienvenue sur ma plateforme académique ! 🚀")
+
 
 def api_recherche_simple(request):
     """
@@ -13,7 +18,7 @@ def api_recherche_simple(request):
         
         if not mots_cles:
             return JsonResponse({
-                'erreur': 'Paramètre "q" (mots-clés) requis'
+                'erreur': 'Parametre "q" (mots-cles) requis'
             }, status=400)
         
         # Construction de la requête de recherche
@@ -53,8 +58,8 @@ def api_recherche_simple(request):
         }
         
         if not contenus_data:
-            response_data['message'] = "Aucun contenu trouvé"
+            response_data['message'] = "Aucun contenu trouve"
         
         return JsonResponse(response_data, safe=False)
     
-    return JsonResponse({'erreur': 'Méthode non autorisée'}, status=405)
+    return JsonResponse({'erreur': 'Methode non autorisee'}, status=405)
