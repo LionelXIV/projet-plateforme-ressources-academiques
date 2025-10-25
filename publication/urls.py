@@ -19,6 +19,5 @@ urlpatterns = [
     # Vue pour supprimer une publication
     path('<int:pk>/delete/', views.publication_delete, name='delete'),
     
-    # Vue pour afficher les publications de l'utilisateur connecté
-    path('my-publications/', views.my_publications, name='my_publications'),
+    # URL "Mes publications" supprimée car pas dans l'issue "Publication de contenu"
 ]

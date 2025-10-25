@@ -148,21 +148,5 @@ def publication_delete(request, pk):
     
     return render(request, 'publication/publication_confirm_delete.html', context)
 
-@login_required
-def my_publications(request):
-    """
-    Vue pour afficher les publications de l'utilisateur connecté
-    Correspond à l'issue "Publication de contenu" - branche lionel
-    """
-    publications = Publication.objects.filter(auteur=request.user).order_by('-date_publication')
-    
-    # Pagination
-    paginator = Paginator(publications, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    context = {
-        'page_obj': page_obj,
-    }
-    
-    return render(request, 'publication/my_publications.html', context)
+# Vue "Mes publications" supprimée car pas dans l'issue "Publication de contenu"
+# Cette fonctionnalité pourrait être développée dans une autre issue

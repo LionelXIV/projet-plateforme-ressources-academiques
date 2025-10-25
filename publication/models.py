@@ -2,10 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Publication(models.Model):
-    """
-    Modèle pour la publication de contenu académique
-    Correspond à l'issue "Publication de contenu" - branche lionel
-    """
     
     TYPE_CONTENU = [
         ('pdf', 'PDF'),

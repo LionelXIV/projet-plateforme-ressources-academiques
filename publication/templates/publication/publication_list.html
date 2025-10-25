@@ -96,9 +96,7 @@
                 
                 {% if publication.mots_cles %}
                 <div class="mb-3">
-                    {% for mot in publication.mots_cles|split:"," %}
-                    <span class="badge bg-secondary me-1">{{ mot|strip }}</span>
-                    {% endfor %}
+                    <span class="badge bg-secondary">{{ publication.mots_cles }}</span>
                 </div>
                 {% endif %}
                 
