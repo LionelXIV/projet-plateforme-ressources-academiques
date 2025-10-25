@@ -127,6 +127,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Configuration de l'authentification
-LOGIN_URL = '/admin/login/'
+LOGIN_URL = '/publication/login/'
 LOGIN_REDIRECT_URL = '/publication/'
 LOGOUT_REDIRECT_URL = '/publication/'

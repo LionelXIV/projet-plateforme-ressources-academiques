@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -148,5 +149,21 @@ def publication_delete(request, pk):
     
     return render(request, 'publication/publication_confirm_delete.html', context)
 
-# Vue "Mes publications" supprimée car pas dans l'issue "Publication de contenu"
-# Cette fonctionnalité pourrait être développée dans une autre issue
+def user_login(request):
+    """
+    Vue de connexion simple pour les utilisateurs
+    Correspond à l'issue "Publication de contenu" - branche lionel
+    """
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            messages.success(request, f'Bienvenue, {user.username} !')
+            return redirect('publication:list')
+        else:
+            messages.error(request, 'Nom d\'utilisateur ou mot de passe incorrect.')
+    
+    return render(request, 'publication/login.html')

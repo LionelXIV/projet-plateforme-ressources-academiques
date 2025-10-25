@@ -4,6 +4,9 @@ from . import views
 app_name = 'publication'
 
 urlpatterns = [
+    # Vue de connexion
+    path('login/', views.user_login, name='login'),
+    
     # Vue pour lister toutes les publications
     path('', views.publication_list, name='list'),
     
