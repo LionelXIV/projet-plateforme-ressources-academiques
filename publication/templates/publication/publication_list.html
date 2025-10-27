@@ -1,0 +1,177 @@
+{% extends 'publication/base.html' %}
+
+{% block title %}Publications - Plateforme Académique{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">
+            <i class="fas fa-book-open"></i> Publications Académiques
+            {% if user.is_authenticated %}
+            <a href="{% url 'publication:create' %}" class="btn btn-primary float-end">
+                <i class="fas fa-plus"></i> Nouvelle Publication
+            </a>
+            {% endif %}
+        </h1>
+    </div>
+</div>
+
+<!-- Formulaire de recherche et filtres -->
+<div class="search-form">
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            <label for="search" class="form-label">Rechercher</label>
+            <input type="text" class="form-control" id="search" name="search" 
+                   value="{{ search_query }}" placeholder="Titre, description, mots-clés...">
+        </div>
+        <div class="col-md-3">
+            <label for="type" class="form-label">Type de contenu</label>
+            <select class="form-select" id="type" name="type">
+                <option value="">Tous les types</option>
+                {% for value, label in type_choices %}
+                <option value="{{ value }}" {% if type_filter == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="matiere" class="form-label">Matière</label>
+            <input type="text" class="form-control" id="matiere" name="matiere" 
+                   value="{{ matiere_filter }}" placeholder="Informatique, Mathématiques...">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">&nbsp;</label>
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Rechercher
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Résultats de recherche -->
+{% if search_query or type_filter or matiere_filter %}
+<div class="alert alert-info">
+    <i class="fas fa-info-circle"></i>
+    {% if search_query %}
+        Recherche : "{{ search_query }}"
+    {% endif %}
+    {% if type_filter %}
+        | Type : {{ type_filter|title }}
+    {% endif %}
+    {% if matiere_filter %}
+        | Matière : "{{ matiere_filter }}"
+    {% endif %}
+    <a href="{% url 'publication:list' %}" class="btn btn-sm btn-outline-primary ms-2">
+        <i class="fas fa-times"></i> Effacer les filtres
+    </a>
+</div>
+{% endif %}
+
+<!-- Liste des publications -->
+{% if page_obj %}
+<div class="row">
+    {% for publication in page_obj %}
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card publication-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h5 class="card-title">{{ publication.titre|truncatechars:50 }}</h5>
+                    <span class="badge bg-primary">{{ publication.type_contenu|title }}</span>
+                </div>
+                
+                <p class="card-text text-muted">
+                    {{ publication.description|truncatechars:100 }}
+                </p>
+                
+                <div class="publication-meta mb-3">
+                    <div><i class="fas fa-user"></i> {{ publication.auteur.username }}</div>
+                    <div><i class="fas fa-book"></i> {{ publication.matiere }}</div>
+                    <div><i class="fas fa-university"></i> {{ publication.universite }}</div>
+                    <div><i class="fas fa-calendar"></i> {{ publication.date_publication|date:"d/m/Y" }}</div>
+                </div>
+                
+                {% if publication.mots_cles %}
+                <div class="mb-3">
+                    <span class="badge bg-secondary">{{ publication.mots_cles }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'publication:detail' publication.pk %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-eye"></i> Voir
+                    </a>
+                    {% if publication.fichier %}
+                    <a href="{{ publication.fichier.url }}" class="btn btn-outline-success btn-sm" target="_blank">
+                        <i class="fas fa-download"></i> Télécharger
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Navigation des publications">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if matiere_filter %}&matiere={{ matiere_filter }}{% endif %}">
+                <i class="fas fa-angle-double-left"></i>
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if matiere_filter %}&matiere={{ matiere_filter }}{% endif %}">
+                <i class="fas fa-angle-left"></i>
+            </a>
+        </li>
+        {% endif %}
+        
+        <li class="page-item active">
+            <span class="page-link">
+                Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+            </span>
+        </li>
+        
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if matiere_filter %}&matiere={{ matiere_filter }}{% endif %}">
+                <i class="fas fa-angle-right"></i>
+            </a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if type_filter %}&type={{ type_filter }}{% endif %}{% if matiere_filter %}&matiere={{ matiere_filter }}{% endif %}">
+                <i class="fas fa-angle-double-right"></i>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<!-- Aucune publication trouvée -->
+<div class="text-center py-5">
+    <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+    <h3 class="text-muted">Aucune publication trouvée</h3>
+    <p class="text-muted">
+        {% if search_query or type_filter or matiere_filter %}
+            Essayez de modifier vos critères de recherche.
+        {% else %}
+            Soyez le premier à publier du contenu académique !
+        {% endif %}
+    </p>
+    {% if user.is_authenticated %}
+    <a href="{% url 'publication:create' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Créer une publication
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

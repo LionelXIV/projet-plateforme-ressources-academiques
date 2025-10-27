@@ -1,0 +1,519 @@
+/* Police & couleurs de base */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  background-color: #f7f8fa;
+  color: #222;
+  line-height: 1.6;
+}
+
+/* Conteneur principal */
+.container {
+  max-width: 1000px;
+  margin: 50px auto;
+  padding: 0 20px;
+}
+
+/* Titres */
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0b3954;
+  margin-bottom: 30px;
+  border-left: 5px solid #0077b6;
+  padding-left: 10px;
+}
+
+/* -----------------------------
+   Carte de contenu (ressource)
+----------------------------- */
+.card {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+}
+
+/* Contenu textuel */
+.card-content {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #003049;
+}
+
+.card p {
+  color: #555;
+  margin: 8px 0;
+}
+
+.card .tags {
+  font-size: 0.9rem;
+  color: #0077b6;
+}
+
+/* Bouton de téléchargement */
+.btn-download {
+  background-color: #0077b6;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.btn-download:hover {
+  background-color: #005f8a;
+}
+
+.btn-download svg {
+  margin-right: 8px;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn-download {
+    width: 100%;
+    justify-content: center;
+    margin-top: 10px;
+  }
+}
+
+/* HEADER COMPACT ET ÉLÉGANT */
+.header {
+  background-color: #0b3954;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 24px;         /* réduit la hauteur (avant 12px) */
+  height: 64px;              /* fixe une hauteur max du header */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-logo img {
+  height: 180px;              /* Taille plus lisible */
+  width: auto;
+  object-fit: contain;
+  border-radius: 6px;
+  padding: 4px;
+  transition: transform 0.2s ease;
+}
+
+/* Zone des actions (recherche + bouton) */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header input {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+  width: 180px;
+  font-size: 0.9rem;
+}
+
+.btn-login {
+  background-color: #0b5c09;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.btn-login:hover {
+  background-color: #005f8a;
+}
+
+
+
+.form {
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form label {
+  font-weight: 600;
+}
+
+.form input,
+.form textarea {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form button {
+  margin-top: 10px;
+  align-self: flex-end;
+}
+
+/* En-tête du tableau de bord */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dashboard-header h1 {
+  font-size: 1.8rem;
+  border-left: 5px solid #0077b6;
+  padding-left: 10px;
+  color: #0b3954;
+}
+
+.dashboard-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #0077b6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-add:hover {
+  background-color: #005f8a;
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #d62828;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-logout:hover {
+  background-color: #a71e1e;
+}
+
+/* Table */
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  border-bottom: 1px solid #eee;
+  padding: 14px;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.dashboard-table th {
+  background-color: #0b3954;
+  color: white;
+  font-weight: 600;
+}
+
+/* Statuts */
+.status-published {
+  color: #007f5f;
+  font-weight: 600;
+}
+
+.status-draft {
+  color: #e67e22;
+  font-weight: 600;
+}
+
+/* Boutons d’action */
+.btn-edit,
+.btn-delete {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-right: 8px;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-edit {
+  background-color: #0077b6;
+}
+
+.btn-edit:hover {
+  opacity: 0.9;
+}
+
+.btn-delete {
+  background-color: #d62828;
+}
+
+.btn-delete:hover {
+  opacity: 0.9;
+}
+
+
+.btn-edit,
+.btn-delete {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-right: 6px;
+  color: white;
+  cursor: pointer;
+}
+
+.btn-edit {
+  background-color: #0077b6;
+}
+
+.btn-delete {
+  background-color: #d62828;
+}
+
+/* Section des boutons du formulaire */
+.form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Bouton Publier */
+.btn-publish {
+  background-color: #0077b6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-publish:hover {
+  background-color: #005f8a;
+}
+
+/* Bouton Annuler */
+.btn-cancel {
+  background-color: #ccc;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cancel:hover {
+  background-color: #b3b3b3;
+}
+
+
+/* ABOUT */
+.about {
+  text-align: center;
+  margin-bottom: 50px;
+  color: #333;
+}
+
+.about h2 {
+  color: #0077b6;
+  font-size: 1.6rem;
+  margin-bottom: 10px;
+}
+
+/* CATÉGORIES */
+.categories {
+  margin-bottom: 60px;
+}
+
+.categories h2 {
+  color: #0b3954;
+  margin-bottom: 20px;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.category-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  padding: 15px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.category-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+/* RESSOURCES */
+.ressources h2 {
+  color: #0b3954;
+  margin-bottom: 20px;
+}
+
+.ressource-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.ressource-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.ressource-card h3 {
+  color: hwb(202 4% 67%);
+  margin-top: 10px;
+  margin-bottom: 8px;
+}
+
+.tags span {
+  background-color: #e3f2fd;
+  color: #0077b6;
+  border-radius: 6px;
+  padding: 3px 8px;
+  margin-right: 5px;
+  font-size: 0.85rem;
+}
+
+/* Bouton Voir détails */
+.btn-details {
+  margin-top: 10px;
+  background-color: #0077b6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-details:hover {
+  background-color: #005f8a;
+}
+
+/* FOOTER */
+.footer {
+  text-align: center;
+  margin-top: 60px;
+  padding: 20px;
+  color: #555;
+  border-top: 1px solid #eee;
+  font-size: 0.9rem;
+}
+.hero {
+  position: relative;
+  height: 55vh;
+  color: #023047;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-content h1 {
+  font-size: 2.6rem;
+  color: #004b7a;
+}
+
+.hero-content p {
+  color: #333;
+  line-height: 1.7;
+}
+
+
+.btn-back {
+  background-color: transparent;
+  color: #0077b6;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 15px;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.btn-back:hover {
+  color: #005f8a;
+  transform: translateX(-3px);
+}
