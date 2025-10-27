@@ -4,7 +4,6 @@ from django.urls import reverse
 
 def home(request):
     """
-    Vue d'accueil simple qui redirige vers les publications
-    Correspond à l'issue "Publication de contenu" - branche lionel
+    Redirige vers la liste centralisée dans l'app core
     """
-    return HttpResponseRedirect(reverse('publication:list'))
+    return HttpResponseRedirect(reverse('core:liste'))

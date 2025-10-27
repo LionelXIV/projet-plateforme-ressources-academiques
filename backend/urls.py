@@ -7,9 +7,7 @@ from . import views
 urlpatterns = [
     path('', views.home, name='home'),
     path('admin/', admin.site.urls),
-    path('publication/', include('publication.urls')),
-    path('telechargement/', include('telechargement.urls')),
-    path('suppression/', include('suppression.urls')),
+    path('core/', include('core.urls')),
 ]
 
 if settings.DEBUG:
