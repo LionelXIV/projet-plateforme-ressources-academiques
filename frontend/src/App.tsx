@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
-import { mockCourses } from "./data/mockCourses";
 import { Course, Document } from "./types";
 import Header from "./components/Header";
 import SearchFilters from "./components/SearchFilters";
@@ -19,34 +18,50 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "./components/ui/pagination";
+import { apiFetch } from "./lib/api"
 
 export default function App() {
-  // Authentication state
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
-  // Courses state
-  const [courses, setCourses] = useState<Course[]>(mockCourses);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  
-  // Search and filters
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [levelFilter, setLevelFilter] = useState("all");
-  
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const coursesPerPage = 9;
-  
-  // Dialog states
   const [showAddCourseDialog, setShowAddCourseDialog] = useState(false);
   const [showViewer, setShowViewer] = useState(false);
   const [viewerDocument, setViewerDocument] = useState<Document | null>(null);
 
-  // Handlers
-
   useEffect(() => {
     const token = localStorage.getItem("jwt_token");
     setIsLoggedIn(Boolean(token));
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const base = import.meta.env.VITE_API_URL;
+        const resp = await fetch(`${base}/courses`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if (!resp.ok) {
+          console.error("fetch courses failed", resp.status);
+          return;
+        }
+        const data = await resp.json();
+        if (!mounted) return;
+        const list = Array.isArray(data) ? data : (Array.isArray(data.results) ? data.results : []);
+        setCourses(list);
+      } catch (e) {
+        console.error("error loading courses", e);
+      }
+    })();
+    return () => { mounted = false; };
   }, []);
 
   const handleLogin = () => {
@@ -54,21 +69,36 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    const token = localStorage.getItem("jwt_token");
     try {
-      const base = import.meta.env.VITE_API_URL;
-      await apiFetch(`${base}/auth/logout/`, { method: 'POST' });
+      await apiFetch("/auth/logout/", { method: "POST" });
     } catch (e) {
     } finally {
       localStorage.removeItem("jwt_token");
       setIsLoggedIn(false);
-      window.location.href = '/';
+      window.location.href = "/";
     }
   };
 
-  const handleViewCourseDetail = (course: Course) => {
-    setSelectedCourse(course);
-  };
+  const handleViewCourseDetail = async (course: Course) => {
+     if (!course?.id) {
+       console.error("course id missing", course);
+       return;
+     }
+     try {
+       const base = import.meta.env.VITE_API_URL;
+       const resp = await fetch(`${base}/courses/${course?.id}/`, { method: "GET" });
+      if (!resp.ok) {
+        console.error("failed to load course detail", resp.status);
+        setSelectedCourse(course);
+        return;
+      }
+      const data = await resp.json();
+      setSelectedCourse(data);
+     } catch (e) {
+       console.error("error fetching course detail", e);
+       setSelectedCourse(course);
+     }
+   };
 
   const handleBackToCourses = () => {
     setSelectedCourse(null);
@@ -156,8 +186,8 @@ export default function App() {
     return (
       <>
         <CourseDetail
-          course={selectedCourse}
-          onBack={handleBackToCourses}
+          courseId={selectedCourse}
+          onClose={handleBackToCourses}
           onViewDocument={handleViewDocument}
         />
         <DocumentViewer

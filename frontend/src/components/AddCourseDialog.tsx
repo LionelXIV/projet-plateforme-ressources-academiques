@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Course, Document } from "../types";
+import { apiFetch } from "../lib/api";
 
 interface AddCourseDialogProps {
   isOpen: boolean;
@@ -31,6 +32,8 @@ export default function AddCourseDialog({ isOpen, onClose, onAddCourse, nextId }
   const [isDragging, setIsDragging] = useState(false);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
   const [imageInputMode, setImageInputMode] = useState<"url" | "upload">("url");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Get file type from extension
   const getFileType = (filename: string): string => {
@@ -167,44 +170,70 @@ export default function AddCourseDialog({ isOpen, onClose, onAddCourse, nextId }
   };
 
   // Handle submit
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const course: Course = {
-      id: nextId,
-      title: newCourse.title,
-      description: newCourse.description,
-      fullDescription: newCourse.fullDescription,
-      instructor: newCourse.instructor,
-      category: newCourse.category,
-      level: newCourse.level,
-      students: 0,
-      image: newCourse.image,
-      publishedAt: "À l'instant",
-      documents: newDocuments
-    };
-    
-    onAddCourse(course);
-    
-    // Reset form
-    setNewDocuments([]);
-    setImageInputMode("url");
-    setNewCourse({
-      title: "",
-      description: "",
-      fullDescription: "",
-      instructor: "",
-      category: "",
-      level: "",
-      image: "",
-    });
-    
-    onClose();
+    setError(null);
+    if (!newCourse.title) {
+      setError("Le titre est requis.");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const payload = {
+        title: newCourse.title,
+        description: newCourse.description,
+        fullDescription: newCourse.fullDescription,
+        instructor: newCourse.instructor,
+        category: newCourse.category,
+        level: newCourse.level,
+        students: Number(newCourse.students) || 0,
+        image: imageInputMode === "url" ? newCourse.image : "",
+        documents: newDocuments.map(d => ({
+          name: d.name,
+          type: d.type,
+          size: d.size,
+          url: d.url || ""
+        }))
+      };
+
+      // call backend API (apiFetch adds Authorization header if token present)
+      const base = import.meta.env.VITE_API_URL;
+      const resp = await apiFetch(`${base}courses/creer/`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        setError(body.error || body.detail || "Erreur lors de la création du cours.");
+        setSubmitting(false);
+        return;
+      }
+
+      const created = await resp.json();
+      onAddCourse(created as Course);
+      setNewCourse({
+        title: "",
+        description: "",
+        fullDescription: "",
+        instructor: "",
+        category: "",
+        level: "",
+        image: "",
+        students: 0,
+      });
+      setNewDocuments([]);
+      onClose();
+    } catch (err) {
+      setError("Erreur réseau");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleCancel = () => {
-    setNewDocuments([]);
-    setImageInputMode("url");
+    setError(null);
     onClose();
   };
 
@@ -457,20 +486,27 @@ export default function AddCourseDialog({ isOpen, onClose, onAddCourse, nextId }
             )}
           </div>
 
+            {error && (
+            <div className="bg-red-50 p-3 rounded-lg border border-red-200">
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
           <div className="flex gap-3 pt-4">
             <Button 
               type="button" 
               variant="outline" 
               className="flex-1"
               onClick={handleCancel}
+              disabled={submitting}
             >
               Annuler
             </Button>
             <Button 
               type="submit" 
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={submitting}
             >
-              Ajouter le cours
+              {submitting ? "En cours..." : "Ajouter le cours"}
             </Button>
           </div>
         </form>

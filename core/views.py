@@ -4,11 +4,13 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 from django.http import QueryDict
 import mimetypes
 import os
+import json
 
-from .models import Ressource
+from .models import Ressource, Course
 from .forms import RessourceForm
 
 # Liste paginée (JSON)
@@ -198,3 +200,133 @@ def supprimer_ressource(request, pk: int):
     res.delete()
     return JsonResponse({'message': 'Ressource supprimee'}, json_dumps_params={'ensure_ascii': False})
 
+# Creation (JSON)
+@csrf_exempt
+@require_http_methods(["POST"])
+def create_course(request):
+    """
+    POST JSON /core/courses/creer/  (JSON body)
+    Body example:
+    {
+      "title": "Mon cours",
+      "description": "Court",
+      "fullDescription": "Détail",
+      "instructor": "Nom",
+      "category": "Développement",
+      "level": "Débutant",
+      "students": 0,
+      "image": "https://...",
+      "documents": [{ "name": "Plan.pdf", "type": "PDF", "size": "1.2 MB", "url": "https://..." }, ...]
+    }
+    Requires authenticated user (JWT or session).
+    Returns created course + documents (201).
+    """
+    user = getattr(request, "user", None)
+    if not user or not user.is_authenticated:
+        return JsonResponse({"error": "authentication_required"}, status=401)
+
+    try:
+        payload = json.loads(request.body.decode() or "{}")
+    except Exception:
+        return JsonResponse({"error": "invalid_json"}, status=400)
+
+    title = payload.get("title") or ""
+    if not title:
+        return JsonResponse({"error": "title_required"}, status=400)
+
+    course_data = {
+        "title": str(title)[:255],
+        "description": str(payload.get("description", ""))[:500],
+        "full_description": payload.get("fullDescription") or payload.get("full_description") or "",
+        "instructor": payload.get("instructor", "")[:200],
+        "category": payload.get("category", "")[:100],
+        "level": payload.get("level", "")[:100],
+        "students": int(payload.get("students") or 0),
+        "image": payload.get("image", "") or "",
+    }
+
+    from .models import Course, Document 
+    try:
+        course = Course.objects.create(author=user, **course_data)
+    except Exception as e:
+        return JsonResponse({"error": "creation_failed", "details": str(e)}, status=500)
+
+    docs = payload.get("documents", []) or []
+    created_docs = []
+    for d in docs:
+        name = d.get("name") or d.get("title") or "document"
+        doc = Document.objects.create(
+            course=course,
+            name=str(name)[:255],
+            doc_type=str(d.get("type", ""))[:64],
+            size=str(d.get("size", ""))[:64],
+            url=str(d.get("url", ""))[:2000],
+        )
+        created_docs.append(doc.to_dict())
+
+    result = course.to_dict()
+    result["documents"] = created_docs
+
+    return JsonResponse(result, status=201, json_dumps_params={"ensure_ascii": False})
+
+# List (JSON)
+@require_http_methods(["GET"])
+def list_courses(request):
+    """
+    GET /api/courses/?page=1&per_page=12&search=...
+    Returns paginated list of courses with documents.
+    """
+    page = int(request.GET.get('page', 1))
+    per_page = int(request.GET.get('per_page', 12))
+
+    qs = Course.objects.all().order_by('-published_at')
+
+    q = request.GET.get('search') or request.GET.get('q')
+    if q:
+        qs = qs.filter(
+            Q(title__icontains=q) |
+            Q(description__icontains=q) |
+            Q(full_description__icontains=q) |
+            Q(instructor__icontains=q) |
+            Q(category__icontains=q)
+        )
+
+    paginator = Paginator(qs, per_page)
+    page_obj = paginator.get_page(page)
+
+    results = []
+    for c in page_obj:
+        results.append({
+            'id': c.id,
+            'title': c.title,
+            'description': c.description,
+            'fullDescription': c.full_description,
+            'instructor': c.instructor,
+            'category': c.category,
+            'level': c.level,
+            'image': c.image,
+            'publishedAt': c.published_at.isoformat() if getattr(c, 'published_at', None) else None,
+            'author': getattr(c.author, 'username', None),
+            'documents': [d.to_dict() for d in c.documents.all()]
+        })
+
+    return JsonResponse({
+        'page': page_obj.number,
+        'per_page': per_page,
+        'total_pages': paginator.num_pages,
+        'total_items': paginator.count,
+        'results': results
+    }, json_dumps_params={'ensure_ascii': False})
+
+# Detail (JSON)
+@require_http_methods(["GET"])
+def get_course(request, pk: int):
+    """
+    GET /api/courses/<pk>/
+    Returns single course with documents.
+    """
+    c = get_object_or_404(Course, pk=pk)
+    data = c.to_dict()
+    data['author'] = getattr(c.author, 'username', None)
+    data['documents'] = [d.to_dict() for d in c.documents.all()]
+    return JsonResponse(data, json_dumps_params={'ensure_ascii': False})

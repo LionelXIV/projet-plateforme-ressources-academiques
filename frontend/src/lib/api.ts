@@ -1,5 +1,6 @@
+const base = import.meta.env.VITE_API_URL || '';
+
 export async function apiFetch(path: string, init: RequestInit = {}) {
-    const base = import.meta.env.VITE_API_URL || '';
     const token = localStorage.getItem('jwt_token');
     const headers = new Headers(init.headers || {});
     if (token) headers.set('Authorization', `Bearer ${token}`);
@@ -9,4 +10,22 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
     const url = path.startsWith('http') ? path : `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
     const resp = await fetch(url, { ...init, headers, credentials: 'include' });
     return resp;
+}
+
+export async function getCourse(pk: number) {
+    let idAny: any = pk;
+    if (typeof pk === "object" && pk !== null) {
+        idAny = (pk as any).id ?? (pk as any).pk ?? idAny;
+    }
+    const id = Number(idAny);
+    if (!Number.isInteger(id) || id <= 0) {
+        throw new Error("Invalid course id");
+    }
+    const resp = await fetch(`${base}/courses/${id}/`, { method: 'GET' });
+    if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        const err = body.error || body.detail || `HTTP ${resp.status}`;
+        throw new Error(err);
+    }
+    return resp.json();
 }

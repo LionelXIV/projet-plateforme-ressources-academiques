@@ -40,10 +40,6 @@ export default function CourseCard({ course, onViewDetails }: CourseCardProps) {
       
       <CardContent>
         <div className="flex items-center gap-4 text-sm text-slate-600">
-          <div className="flex items-center gap-1">
-            <Users className="w-4 h-4" />
-            <span>{course.students.toLocaleString()} étudiants</span>
-          </div>
           <Badge variant="outline" className="text-blue-600 border-blue-200">
             {course.category}
           </Badge>

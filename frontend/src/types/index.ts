@@ -14,7 +14,6 @@ export interface Course {
   instructor: string;
   category: string;
   level: string;
-  students: number;
   image: string;
   publishedAt: string;
   documents: Document[];
