@@ -186,6 +186,11 @@ export default function App() {
     setSelectedCourse(null);
   };
 
+  const handleCourseUpdated = (updated: Course) => {
+    setCourses(prev => prev.map(c => c.id === updated.id ? updated : c));
+    setSelectedCourse(updated);
+  };
+
   // If a course is selected, show detail view
   if (selectedCourse) {
     const selectedId = Number((selectedCourse as any)?.id ?? (selectedCourse as any)?.pk ?? 0);
@@ -198,6 +203,7 @@ export default function App() {
           onViewDocument={handleViewDocument}
           isLoggedIn={isLoggedIn}
           onDelete={handleCourseDeleted}
+          onUpdate={handleCourseUpdated}
         />
         <DocumentViewer
           document={viewerDocument}

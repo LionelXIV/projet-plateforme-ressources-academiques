@@ -197,9 +197,7 @@ export default function AddCourseDialog({ isOpen, onClose, onAddCourse, nextId }
         }))
       };
 
-      // call backend API (apiFetch adds Authorization header if token present)
-      const base = import.meta.env.VITE_API_URL;
-      const resp = await apiFetch(`${base}courses/creer/`, {
+      const resp = await apiFetch(`courses/creer/`, {
         method: "POST",
         body: JSON.stringify(payload),
       });
