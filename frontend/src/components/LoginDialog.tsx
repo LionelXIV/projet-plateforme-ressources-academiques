@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, React } from "react";
 import { ShieldCheck } from "lucide-react";
 import { DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Label } from "./ui/label";
@@ -14,14 +14,27 @@ export default function LoginDialog({ onLogin }: LoginDialogProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    
-    if (email === "admin@uqar.ca" && password === "admin123") {
+    try {
+      const base = import.meta.env.VITE_API_URL;
+      const resp = await fetch(`${base}/auth/login/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: email, password }),
+      });
+      const data = await resp.json();
+      if (!resp.ok) {
+        setError(data.error || "Identifiants invalides");
+        return;
+      }
+      if (data.token) {
+        localStorage.setItem("jwt_token", data.token);
+      }
       onLogin();
-    } else {
-      setError("Identifiants incorrects. Utilisez admin@uqar.ca / admin123");
+    } catch (err) {
+      setError("Erreur réseau");
     }
   };
 
@@ -67,15 +80,7 @@ export default function LoginDialog({ onLogin }: LoginDialogProps) {
             <p className="text-sm text-red-800">{error}</p>
           </div>
         )}
-        
-        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-          <p className="text-sm text-blue-800">
-            <strong>Identifiants de test:</strong><br />
-            Email: admin@uqar.ca<br />
-            Mot de passe: admin123
-          </p>
-        </div>
-        
+                
         <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
           Se connecter
         </Button>

@@ -43,12 +43,27 @@ export default function App() {
   const [viewerDocument, setViewerDocument] = useState<Document | null>(null);
 
   // Handlers
+
+  useEffect(() => {
+    const token = localStorage.getItem("jwt_token");
+    setIsLoggedIn(Boolean(token));
+  }, []);
+
   const handleLogin = () => {
     setIsLoggedIn(true);
   };
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
+  const handleLogout = async () => {
+    const token = localStorage.getItem("jwt_token");
+    try {
+      const base = import.meta.env.VITE_API_URL;
+      await apiFetch(`${base}/auth/logout/`, { method: 'POST' });
+    } catch (e) {
+    } finally {
+      localStorage.removeItem("jwt_token");
+      setIsLoggedIn(false);
+      window.location.href = '/';
+    }
   };
 
   const handleViewCourseDetail = (course: Course) => {
@@ -154,7 +169,6 @@ export default function App() {
     );
   }
 
-  // Main view
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
