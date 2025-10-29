@@ -181,14 +181,23 @@ export default function App() {
     return pages;
   };
 
+  const handleCourseDeleted = (id: number) => {
+    setCourses(prev => prev.filter(c => c.id !== id));
+    setSelectedCourse(null);
+  };
+
   // If a course is selected, show detail view
   if (selectedCourse) {
+    const selectedId = Number((selectedCourse as any)?.id ?? (selectedCourse as any)?.pk ?? 0);
     return (
       <>
         <CourseDetail
-          courseId={selectedCourse}
+          courseId={selectedId}
+          initial={selectedCourse}
           onClose={handleBackToCourses}
           onViewDocument={handleViewDocument}
+          isLoggedIn={isLoggedIn}
+          onDelete={handleCourseDeleted}
         />
         <DocumentViewer
           document={viewerDocument}

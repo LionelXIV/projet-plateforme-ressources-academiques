@@ -1,24 +1,26 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Users, FileText, Eye, Download } from "lucide-react";
+import { ArrowLeft, Users, FileText, Eye, Download, Trash2 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import { Course } from "../types";
-import { getCourse } from "../lib/api";
+import { getCourse, deleteCourse } from "../lib/api";
 
 interface CourseDetailProps {
   courseId: number;
   initial?: Course | null;
   onClose?: () => void;
   onViewDocument?: (doc: any) => void;
+  isLoggedIn?: boolean;
+  onDelete?: (id: number) => void;
 }
 
-export default function CourseDetail({ courseId, initial = null, onClose, onViewDocument }: CourseDetailProps) {
-  console.log(onClose);
+export default function CourseDetail({ courseId, initial = null, onClose, onViewDocument, isLoggedIn = false, onDelete }: CourseDetailProps) {
   const [course, setCourse] = useState<Course | null>(initial);
   const [loading, setLoading] = useState(!initial);
   const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -29,7 +31,7 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
     }
 
     setLoading(true);
-    getCourse(Number(courseId.id))
+    getCourse(Number(courseId))
       .then((data) => {
         if (!mounted) return;
         setCourse(data);
@@ -48,6 +50,21 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
     };
   }, [courseId, initial]);
 
+  const handleDeleteClick = async () => {
+    if (!course?.id) return;
+    if (!confirm("Supprimer définitivement ce cours ? Cette opération est irréversible.")) return;
+    setDeleting(true);
+    try {
+      await deleteCourse(course.id);
+      if (onDelete) onDelete(course.id);
+      else if (onClose) onClose();
+    } catch (e: any) {
+      setError(e?.message || "Erreur lors de la suppression");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) return <div>Chargement...</div>;
   if (error) return <div className="text-red-600">Erreur: {error}</div>;
   if (!course) return <div>Cours introuvable</div>;
@@ -60,15 +77,33 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
-        <Button
-          onClick={onClose}
-          variant="outline"
-          className="mb-6 border-blue-200 hover:bg-blue-50"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Retour aux cours
-        </Button>
+        {/* Back Button + optional delete */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <Button
+              onClick={onClose}
+              variant="outline"
+              className="mb-6 border-blue-200 hover:bg-blue-50"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Retour aux cours
+            </Button>
+          </div>
+
+          {isLoggedIn && (
+            <div>
+              <Button
+                onClick={handleDeleteClick}
+                variant="destructive"
+                className="flex items-center gap-2"
+                disabled={deleting}
+              >
+                <Trash2 className="w-4 h-4" />
+                {deleting ? "Suppression..." : "Supprimer le cours"}
+              </Button>
+            </div>
+          )}
+        </div>
 
         {/* Course Header */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">

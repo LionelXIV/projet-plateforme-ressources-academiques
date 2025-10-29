@@ -65,11 +65,17 @@ from corsheaders.defaults import default_headers
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
 ]
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "authorization",
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
 
 # JWT settings (defaults)
 JWT_ALGORITHM = 'HS256'

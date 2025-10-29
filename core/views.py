@@ -318,13 +318,26 @@ def list_courses(request):
         'results': results
     }, json_dumps_params={'ensure_ascii': False})
 
-# Detail (JSON)
-@require_http_methods(["GET"])
+# Details and Delete (JSON)
+@csrf_exempt
+@require_http_methods(["GET", "DELETE"])
 def get_course(request, pk: int):
     """
-    GET /api/courses/<pk>/
-    Returns single course with documents.
+    GET /api/courses/<pk>/  -> return course json
+    DELETE /api/courses/<pk>/ -> delete course (authenticated, author or staff)
     """
+    if request.method == "DELETE":
+        user = getattr(request, "user", None)
+        if not user or not user.is_authenticated:
+            return JsonResponse({"error": "authentication_required"}, status=401)
+
+        course = get_object_or_404(Course, pk=pk)
+        if course.author is not None and course.author != user and not user.is_staff:
+            return JsonResponse({"error": "permission_refusee"}, status=403)
+
+        course.delete()
+        return JsonResponse({"message": "Course supprimee"}, status=200, json_dumps_params={'ensure_ascii': False})
+
     c = get_object_or_404(Course, pk=pk)
     data = c.to_dict()
     data['author'] = getattr(c.author, 'username', None)

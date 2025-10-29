@@ -29,3 +29,16 @@ export async function getCourse(pk: number) {
     }
     return resp.json();
 }
+
+export async function deleteCourse(pk: number | string | { id?: number; pk?: number }) {
+    let idAny: any = pk;
+    if (typeof pk === "object" && pk !== null) idAny = (pk as any).id ?? (pk as any).pk ?? idAny;
+    const id = Number(idAny);
+    if (!Number.isInteger(id) || id <= 0) throw new Error("Invalid course id");
+    const resp = await apiFetch(`/courses/${id}/`, { method: "DELETE" });
+    if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        throw new Error(body.error || body.detail || `HTTP ${resp.status}`);
+    }
+    return resp.json();
+}
