@@ -1,0 +1,31 @@
+# GitLab CI minimal pour le projet Django (backend) + React/Vite (frontend)
+# - Deux étapes: test, build
+# - Jobs exécutés sur toutes les branches
+# - Pas de déploiement (CD)
+
+stages:
+  - test
+  - build
+
+# Job Frontend: installation + build (test basique via la compilation)
+frontend_test:
+  stage: test
+  image: node:22 # Image officielle Node.js 22
+  only:
+    - branches # Exécuter sur toutes les branches
+  before_script:
+    - cd frontend
+  script:
+    - npm ci || npm install
+    - npm run build
+
+# Job Backend: installation des dépendances Python
+backend_install:
+  stage: build
+  image: python:3.13 # Image officielle Python 3.13
+  only:
+    - branches # Exécuter sur toutes les branches
+  script:
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+
