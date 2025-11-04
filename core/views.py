@@ -13,50 +13,39 @@ import json
 from .models import Ressource, Course
 from .forms import RessourceForm
 
-# Liste paginée (JSON)
 def liste_ressources(request):
-    page = int(request.GET.get('page', 1))
-    per_page = int(request.GET.get('per_page', 12))
-
-    qs = Ressource.objects.filter(est_publie=True).order_by('-date_publication')
-
-    q = request.GET.get('search') or request.GET.get('q')
-    if q:
-        qs = qs.filter(
-            Q(titre__icontains=q) |
-            Q(description__icontains=q) |
-            Q(mots_cles__icontains=q) |
-            Q(matiere__icontains=q) |
-            Q(theme__icontains=q) |
-            Q(universite__icontains=q)
-        )
+    """
+    Listing public des ressources.
+    Retourne JSON (200) contenant { results, page, total_items, total_pages }.
+    Si le client demande explicitement 'text/html' via Accept, on peut rendre un template existant.
+    """
+    qs = Ressource.objects.all().order_by('-id')
+    try:
+        page = int(request.GET.get('page', 1))
+    except Exception:
+        page = 1
+    try:
+        per_page = int(request.GET.get('per_page', 20))
+    except Exception:
+        per_page = 20
 
     paginator = Paginator(qs, per_page)
     page_obj = paginator.get_page(page)
+    results = [r.to_dict() for r in page_obj.object_list]
 
-    data = []
-    for r in page_obj:
-        data.append({
-            'id': r.id,
-            'titre': r.titre,
-            'description': r.description,
-            'mots_cles': r.mots_cles,
-            'type_contenu': r.type_contenu,
-            'matiere': r.matiere,
-            'universite': r.universite,
-            'theme': r.theme,
-            'date_publication': r.date_publication.isoformat(),
-            'fichier_url': r.fichier.url if r.fichier else None,
-            'auteur': getattr(r.auteur, 'username', None),
-        })
+    data = {
+        "results": results,
+        "page": page_obj.number,
+        "total_items": paginator.count,
+        "total_pages": paginator.num_pages,
+    }
 
-    return JsonResponse({
-        'page': page_obj.number,
-        'per_page': per_page,
-        'total_pages': paginator.num_pages,
-        'total_items': paginator.count,
-        'results': data
-    }, json_dumps_params={'ensure_ascii': False})
+    accept = request.META.get("HTTP_ACCEPT", "")
+    if "text/html" in accept:
+
+        return JsonResponse(data, json_dumps_params={"ensure_ascii": False})
+
+    return JsonResponse(data, json_dumps_params={"ensure_ascii": False})
 
 
 # Détail (JSON)

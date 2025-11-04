@@ -1,17 +1,21 @@
-# GitLab CI minimal pour le projet Django (backend) + React/Vite (frontend)
-# - Deux étapes: test, build
-# - Jobs exécutés sur toutes les branches
-# - Pas de déploiement (CD)
+# CI/CD complète pour Django (backend) + React/Vite (frontend)
+# Étapes :
+#  1. frontend_build — compile le frontend React/Vite
+#  2. backend_build — installe les dépendances Django
+#  3. backend_test — exécute les tests unitaires Django
 
 stages:
-  - test
-  - build
+  - frontend_build
+  - backend_build
+  - backend_test
 
-# Job Frontend: installation + build (test basique via la compilation)
-frontend_test:
-  stage: test
+# -------------------------------
+# Étape 1 : Build du frontend
+# -------------------------------
+frontend_build:
+  stage: frontend_build
   image: node:22
-  tags: ["uvs"] 
+  tags: ["uvs"]
   only:
     - branches
   before_script:
@@ -19,14 +23,65 @@ frontend_test:
   script:
     - npm ci || npm install
     - npm run build
+  artifacts:
+    name: "frontend_dist_${CI_COMMIT_REF_SLUG}"
+    paths:
+      - frontend/dist
+    expire_in: never
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-frontend
+    paths:
+      - frontend/node_modules/
 
-# Job Backend: installation des dépendances Python
-backend_install:
-  stage: build
+# -------------------------------
+# Étape 2 : Build du backend (installation des dépendances)
+# -------------------------------
+backend_build:
+  stage: backend_build
   image: python:3.13
-  tags: ["uvs"] 
+  tags: ["uvs"]
   only:
     - branches
+  before_script:
+    - python -m venv venv
+    - source venv/bin/activate
   script:
     - pip install --upgrade pip
     - pip install -r requirements.txt
+    - echo "✅ Backend installé avec succès."
+  artifacts:
+    name: "backend_env_${CI_COMMIT_REF_SLUG}"
+    paths:
+      - venv/
+    expire_in: never
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-backend
+    paths:
+      - .cache/pip/
+
+# -------------------------------
+# Étape 3 : Tests Django
+# -------------------------------
+backend_test:
+  stage: backend_test
+  image: python:3.13
+  tags: ["uvs"]
+  only:
+    - branches
+  dependencies:
+    - backend_build
+  before_script:
+    - source venv/bin/activate
+    - export DJANGO_SETTINGS_MODULE=backend.settings
+    - export PYTHONPATH=$PWD
+    - export SECRET_KEY="gitlab-ci-test-secret-key-1234567890"
+  script:
+    - echo "✅ Lancement des tests Django..."
+    - python manage.py test --noinput
+  artifacts:
+    when: always
+    name: "django_test_reports_${CI_COMMIT_REF_SLUG}"
+    paths:
+      - test-reports/
+    expire_in: never
+  coverage: '/^TOTAL.*\s+(\d+\%)$/'

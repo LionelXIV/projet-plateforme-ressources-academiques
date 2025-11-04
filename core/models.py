@@ -27,6 +27,23 @@ class Ressource(models.Model):
     def __str__(self):
         return f"{self.titre}"
     
+    def to_dict(self):
+        return {
+            "id": self.pk,
+            "titre": self.titre,
+            "description": self.description,
+            "mots_cles": self.mots_cles,
+            "type_contenu": self.type_contenu,
+            "matiere": self.matiere,
+            "universite": self.universite,
+            "theme": self.theme,
+            "date_publication": self.date_publication.isoformat() if getattr(self, "date_publication", None) else None,
+            "date_modification": self.date_modification.isoformat() if getattr(self, "date_modification", None) else None,
+            "est_publie": bool(self.est_publie),
+            "fichier_url": self.fichier.url if self.fichier else None,
+            "auteur": getattr(self.auteur, "username", None),
+        }
+
     class Meta:
         ordering = ['-date_publication']
         verbose_name = "Ressource"
