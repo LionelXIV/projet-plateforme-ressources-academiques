@@ -18,8 +18,8 @@ export default function LoginDialog({ onLogin }: LoginDialogProps) {
     e.preventDefault();
     setError("");
     try {
-      const base = import.meta.env.VITE_API_URL;
-      const resp = await fetch(`${base}/auth/login/`, {
+      const base = import.meta.env.VITE_API_URL_LOGIN;
+      const resp = await fetch(`${base}auth/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: email, password }),

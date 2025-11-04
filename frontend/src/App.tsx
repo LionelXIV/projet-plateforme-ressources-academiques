@@ -70,7 +70,8 @@ export default function App() {
 
   const handleLogout = async () => {
     try {
-      await apiFetch("/auth/logout/", { method: "POST" });
+      const base = import.meta.env.VITE_API_URL_LOGIN;
+      await apiFetch(`${base}auth/logout/`, { method: "POST" });
     } catch (e) {
     } finally {
       localStorage.removeItem("jwt_token");

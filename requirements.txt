@@ -6,6 +6,7 @@ django-cors-headers==4.9.0
 dotenv==0.9.9
 jwt==1.4.0
 pycparser==2.23
+PyJWT==2.10.1
 python-dotenv==1.2.1
 setuptools==80.9.0
 sqlparse==0.5.3

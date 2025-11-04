@@ -23,11 +23,6 @@ frontend_build:
   script:
     - npm ci || npm install
     - npm run build
-  artifacts:
-    name: "frontend_dist_${CI_COMMIT_REF_SLUG}"
-    paths:
-      - frontend/dist
-    expire_in: never
   cache:
     key: ${CI_COMMIT_REF_SLUG}-frontend
     paths:
@@ -54,10 +49,6 @@ backend_build:
     paths:
       - venv/
     expire_in: never
-  cache:
-    key: ${CI_COMMIT_REF_SLUG}-backend
-    paths:
-      - .cache/pip/
 
 # -------------------------------
 # Étape 3 : Tests Django
