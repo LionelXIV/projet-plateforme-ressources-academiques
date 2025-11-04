@@ -10,10 +10,10 @@ stages:
 # Job Frontend: installation + build (test basique via la compilation)
 frontend_test:
   stage: test
-  image: node:22 # Image officielle Node.js 22
+  image: node:22
   tags: ["uvs"] 
   only:
-    - branches # Exécuter sur toutes les branches
+    - branches
   before_script:
     - cd frontend
   script:
@@ -23,11 +23,10 @@ frontend_test:
 # Job Backend: installation des dépendances Python
 backend_install:
   stage: build
-  image: python:3.13 # Image officielle Python 3.13
+  image: python:3.13
   tags: ["uvs"] 
   only:
-    - branches # Exécuter sur toutes les branches
+    - branches
   script:
     - pip install --upgrade pip
     - pip install -r requirements.txt
-

@@ -94,7 +94,6 @@ requests-ntlm==1.1.0
 resolvelib==1.0.1
 rich==13.7.1
 screen-resolution-extra==0.0.0
-selinux @ file:///build/libselinux-IVxPh3/libselinux-3.5/src
 setuptools==68.1.2
 simplejson==3.19.2
 six==1.16.0
