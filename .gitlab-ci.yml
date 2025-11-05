@@ -31,7 +31,28 @@ frontend_build:
       - frontend/node_modules/
 
 # -------------------------------
-# Étape 2 : Build du backend (installation des dépendances)
+# Étape 2 : Teste du frontend (installation des dépendances)
+# -------------------------------
+frontend_test:
+  stage: backend_test
+  image: node:22
+  tags: ["uvs"]
+  only:
+    - branches
+  before_script:
+    - cd frontend
+    - npm ci || npm install
+  script:
+    - npm run test -- --coverage --run
+  artifacts:
+    when: always
+    name: "frontend_coverage_${CI_COMMIT_REF_SLUG}"
+    paths:
+      - frontend/coverage/lcov.info
+    expire_in: 1 week
+
+# -------------------------------
+# Étape 3 : Build du backend (installation des dépendances)
 # -------------------------------
 backend_build:
   stage: backend_build
@@ -53,8 +74,9 @@ backend_build:
     expire_in: never
 
 # -------------------------------
-# Étape 3 : Tests Django
+# Étape 4 : Tests Django
 # -------------------------------
+# Étape 4 : Tests Django (avec couverture)
 backend_test:
   stage: backend_test
   image: python:3.13
@@ -68,26 +90,44 @@ backend_test:
     - export DJANGO_SETTINGS_MODULE=backend.settings
     - export PYTHONPATH=$PWD
     - export SECRET_KEY="gitlab-ci-test-secret-key-1234567890"
+    - pip install pytest pytest-cov
   script:
-    - echo "✅ Lancement des tests Django..."
-    - python manage.py test --noinput
+    - echo "✅ Lancement des tests Django avec couverture..."
+    - pytest -q --maxfail=1 --disable-warnings --cov=backend --cov-report=xml:coverage.xml
   artifacts:
     when: always
     name: "django_test_reports_${CI_COMMIT_REF_SLUG}"
     paths:
+      - coverage.xml
       - test-reports/
-    expire_in: never
+    expire_in: 1 week
   coverage: '/^TOTAL.*\s+(\d+\%)$/'
 
+
+
+
+
 # -------------------------------
-# Étape 4 : Analyse SonarCloud
+# Étape 5 : Analyse SonarCloud
+# -------------------------------
+# -------------------------------
+# Étape 5 : Analyse SonarCloud
 # -------------------------------
 sonar_scan:
-  stage: sonar           # <- fait correspondre au stage listé
+  stage: sonar
   image: sonarsource/sonar-scanner-cli:latest
   tags: ["uvs"]
-  needs: ["backend_test"]  # <- plus de frontend_test ici
+  needs: ["backend_test", "frontend_test"]
   script:
     - |
-      # Le .properties contient host/org/key/name. On ne passe que le token.
-      sonar-scanner -Dsonar.token="${SONAR_TOKEN}"
+      # Analyse SonarCloud avec couverture et Quality Gate
+      sonar-scanner \
+        -Dsonar.token="${SONAR_TOKEN}" \
+        -Dsonar.python.coverage.reportPaths=coverage.xml \
+        -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info \
+        -Dsonar.qualitygate.wait=true
+  artifacts:
+    when: always
+    paths:
+      - .scannerwork/report-task.txt
+    expire_in: 1 week
