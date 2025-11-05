@@ -3,11 +3,13 @@
 #  1. frontend_build — compile le frontend React/Vite
 #  2. backend_build — installe les dépendances Django
 #  3. backend_test — exécute les tests unitaires Django
+#  4. sonar — analyse statique SonarCloud (merge_requests et main)
 
 stages:
   - frontend_build
   - backend_build
   - backend_test
+  - sonar
 
 # -------------------------------
 # Étape 1 : Build du frontend
@@ -76,3 +78,22 @@ backend_test:
       - test-reports/
     expire_in: never
   coverage: '/^TOTAL.*\s+(\d+\%)$/'
+
+# -------------------------------
+# Étape 4 : Analyse SonarCloud
+# -------------------------------
+sonarqube_scan:
+  stage: sonar
+  image: sonarsource/sonar-scanner-cli:latest
+  tags: ["uvs"]
+  only:
+    - merge_requests
+    - main
+  script:
+    - |
+      sonar-scanner \
+        -Dsonar.organization=$SONAR_ORG_KEY \
+        -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+        -Dsonar.sources=. \
+        -Dsonar.host.url=$SONAR_HOST_URL \
+        -Dsonar.login=$SONAR_TOKEN
