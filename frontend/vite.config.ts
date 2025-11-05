@@ -1,7 +1,17 @@
 // vite.config.ts
-import { defineConfig } from 'vitest/config'   // <-- depuis vitest/config
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react-swc'
 import path from 'node:path'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
+
+const coverageDir = path.resolve(__dirname, 'coverage')
+if (!existsSync(coverageDir)) {
+  mkdirSync(coverageDir, { recursive: true })
+}
+const coverageKeepFile = path.join(coverageDir, '.keep')
+if (!existsSync(coverageKeepFile)) {
+  writeFileSync(coverageKeepFile, '')
+}
 
 export default defineConfig({
   plugins: [react()],
@@ -58,9 +68,21 @@ export default defineConfig({
     environment: 'happy-dom',
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'lcov'],        // => génère coverage/lcov.info
-      reportsDirectory: 'coverage',
-      
+      reportsDirectory: path.resolve(__dirname, 'coverage'), // fichiers stables dans frontend/coverage
+      reporter: [
+        ['text'],
+        ['lcovonly', { file: 'lcov.info' }],
+        ['html', { subdir: '.' }],
+      ], // conserve lcov.info et index.html à la racine du dossier coverage
+      include: ['src/**/*.{js,jsx,ts,tsx}'],
+      exclude: [
+        'node_modules/',
+        'tests/',
+        'src/components/ui/**',
+        'src/types/**',
+      ],
+      clean: false, // ne pas purger le dossier coverage avant/après chaque run
+      cleanOnRerun: false, // idem pour les relances dans le même process
     },
   },
 })

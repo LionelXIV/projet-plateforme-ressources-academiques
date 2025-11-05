@@ -27,6 +27,8 @@
             "vaul": "^1.1.2"
       },
       "devDependencies": {
+            "@testing-library/jest-dom": "^6.9.1",
+            "@testing-library/react": "^15.0.2",
             "@types/node": "^20.10.0",
             "@vitejs/plugin-react-swc": "^3.10.2",
             "@vitest/coverage-v8": "^4.0.7",
