@@ -85,6 +85,7 @@ backend_test:
 sonar_scan:
   stage: sonar           # <- fait correspondre au stage listé
   image: sonarsource/sonar-scanner-cli:latest
+  tags: ["uvs"]
   needs: ["backend_test"]  # <- plus de frontend_test ici
   script:
     - |
