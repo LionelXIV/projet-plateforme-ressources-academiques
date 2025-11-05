@@ -30,6 +30,8 @@
             "@types/node": "^20.10.0",
             "@vitejs/plugin-react-swc": "^3.10.2",
             "@vitest/coverage-v8": "^4.0.7",
+            "happy-dom": "^20.0.10",
+            "jsdom": "^27.0.1",
             "vite": "6.3.5",
             "vitest": "^4.0.7"
       },
