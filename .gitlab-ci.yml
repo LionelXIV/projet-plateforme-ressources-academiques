@@ -1,12 +1,14 @@
-# CI/CD complète pour Django (backend) + React/Vite (frontend)
+# CI/CD complète Django (backend) + React/Vite (frontend)
 # Étapes :
 #  1. frontend_build — compile le frontend React/Vite
-#  2. backend_build — installe les dépendances Django
-#  3. backend_test — exécute les tests unitaires Django
-#  4. sonar — analyse statique SonarCloud (merge_requests et main)
+#  2. frontend_test — exécute les tests unitaires du frontend
+#  3. backend_build — installe les dépendances Django
+#  4. backend_test — exécute les tests unitaires Django
+#  5. sonar — analyse statique SonarCloud
 
 stages:
   - frontend_build
+  - frontend_test
   - backend_build
   - backend_test
   - sonar
@@ -29,20 +31,29 @@ frontend_build:
     key: ${CI_COMMIT_REF_SLUG}-frontend
     paths:
       - frontend/node_modules/
+  artifacts:
+    name: "frontend_build_${CI_COMMIT_REF_SLUG}"
+    paths:
+      - frontend/dist
+      - frontend/node_modules
+    expire_in: never
 
 # -------------------------------
-# Étape 2 : Teste du frontend (installation des dépendances)
+# Étape 2 : Tests du frontend (réutilise le build)
 # -------------------------------
 frontend_test:
-  stage: backend_test
+  stage: frontend_test
   image: node:22
   tags: ["uvs"]
   only:
     - branches
+  needs:
+    - job: frontend_build
+      artifacts: true
   before_script:
     - cd frontend
-    - npm ci || npm install
   script:
+    - echo "✅ Lancement des tests frontend..."
     - npm run test -- --run
   artifacts:
     when: always
@@ -52,7 +63,7 @@ frontend_test:
     expire_in: 1 week
 
 # -------------------------------
-# Étape 3 : Build du backend (installation des dépendances)
+# Étape 3 : Build du backend
 # -------------------------------
 backend_build:
   stage: backend_build
@@ -76,7 +87,6 @@ backend_build:
 # -------------------------------
 # Étape 4 : Tests Django
 # -------------------------------
-# Étape 4 : Tests Django (avec couverture)
 backend_test:
   stage: backend_test
   image: python:3.13
@@ -103,13 +113,6 @@ backend_test:
     expire_in: 1 week
   coverage: '/^TOTAL.*\s+(\d+\%)$/'
 
-
-
-
-
-# -------------------------------
-# Étape 5 : Analyse SonarCloud
-# -------------------------------
 # -------------------------------
 # Étape 5 : Analyse SonarCloud
 # -------------------------------
@@ -117,12 +120,21 @@ sonar_scan:
   stage: sonar
   image: sonarsource/sonar-scanner-cli:latest
   tags: ["uvs"]
-  needs: ["backend_test", "frontend_test"]
+  only:
+    - branches
+  needs:
+    - job: backend_test
+      artifacts: true
+    - job: frontend_test
+      artifacts: true
   script:
-    - |
-      # Analyse SonarCloud avec couverture et Quality Gate
-      sonar-scanner \
+    - echo "🔍 Lancement de l'analyse SonarCloud..."
+    - sonar-scanner \
+        -Dsonar.projectKey="${SONAR_PROJECT_KEY}" \
+        -Dsonar.organization="${SONAR_ORGANIZATION}" \
+        -Dsonar.host.url="${SONAR_HOST_URL}" \
         -Dsonar.token="${SONAR_TOKEN}" \
+        -Dsonar.sources=. \
         -Dsonar.python.coverage.reportPaths=coverage.xml \
         -Dsonar.javascript.lcov.reportPaths=frontend/coverage/lcov.info \
         -Dsonar.qualitygate.wait=true
