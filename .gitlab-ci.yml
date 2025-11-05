@@ -82,18 +82,11 @@ backend_test:
 # -------------------------------
 # Étape 4 : Analyse SonarCloud
 # -------------------------------
-sonarqube_scan:
-  stage: sonar
+sonar_scan:
+  stage: sonar           # <- fait correspondre au stage listé
   image: sonarsource/sonar-scanner-cli:latest
-  tags: ["uvs"]
-  only:
-    - merge_requests
-    - main
+  needs: ["backend_test"]  # <- plus de frontend_test ici
   script:
     - |
-      sonar-scanner \
-        -Dsonar.organization=$SONAR_ORG_KEY \
-        -Dsonar.projectKey=$SONAR_PROJECT_KEY \
-        -Dsonar.sources=. \
-        -Dsonar.host.url=$SONAR_HOST_URL \
-        -Dsonar.login=$SONAR_TOKEN
+      # Le .properties contient host/org/key/name. On ne passe que le token.
+      sonar-scanner -Dsonar.token="${SONAR_TOKEN}"
