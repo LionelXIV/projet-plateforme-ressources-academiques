@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">66.4% </span>
+                <span class="strong">66.91% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>83/125</span>
+                <span class='fraction'>89/133</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">71.17% </span>
+                <span class="strong">71.42% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>79/111</span>
+                <span class='fraction'>85/119</span>
             </div>
         
             
@@ -413,7 +413,17 @@
 <a name='L348'></a><a href='#L348'>348</a>
 <a name='L349'></a><a href='#L349'>349</a>
 <a name='L350'></a><a href='#L350'>350</a>
-<a name='L351'></a><a href='#L351'>351</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L351'></a><a href='#L351'>351</a>
+<a name='L352'></a><a href='#L352'>352</a>
+<a name='L353'></a><a href='#L353'>353</a>
+<a name='L354'></a><a href='#L354'>354</a>
+<a name='L355'></a><a href='#L355'>355</a>
+<a name='L356'></a><a href='#L356'>356</a>
+<a name='L357'></a><a href='#L357'>357</a>
+<a name='L358'></a><a href='#L358'>358</a>
+<a name='L359'></a><a href='#L359'>359</a>
+<a name='L360'></a><a href='#L360'>360</a>
+<a name='L361'></a><a href='#L361'>361</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -447,8 +457,12 @@
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -481,9 +495,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
@@ -604,6 +622,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">15x</span>
 <span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -787,6 +807,8 @@ import { apiFetch } from "./lib/api"
 &nbsp;
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState&lt;string | null&gt;(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [courses, setCourses] = useState&lt;Course[]&gt;([]);
   const [selectedCourse, setSelectedCourse] = useState&lt;Course | null&gt;(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -801,6 +823,8 @@ export default function App() {
   useEffect(() =&gt; {
     const token = localStorage.getItem("jwt_token");
     setIsLoggedIn(Boolean(token));
+    setCurrentUser(localStorage.getItem("jwt_username"));
+    setIsAdmin(localStorage.getItem("jwt_is_admin") === "1");
   }, []);
 &nbsp;
   useEffect(() =&gt; {
@@ -831,10 +855,14 @@ export default function App() {
 &nbsp;
   const handleLogin = <span class="fstat-no" title="function not covered" >() =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    setIsLoggedIn(true);</span>
+<span class="cstat-no" title="statement not covered" >    setCurrentUser(localStorage.getItem("jwt_username"));</span>
+<span class="cstat-no" title="statement not covered" >    setIsAdmin(localStorage.getItem("jwt_is_admin") === "1");</span>
   };
 &nbsp;
   const handleLogout = async () =&gt; {
     localStorage.removeItem("jwt_token");
+    localStorage.removeItem("jwt_username");
+    localStorage.removeItem("jwt_is_admin");
     setIsLoggedIn(false);
     window.location.href = "/";
   };
@@ -964,6 +992,8 @@ export default function App() {
           isLoggedIn={isLoggedIn}
           onDelete={handleCourseDeleted}
           onUpdate={handleCourseUpdated}
+          currentUser={currentUser}
+          isAdmin={isAdmin}
         /&gt;
         &lt;DocumentViewer
           document={viewerDocument}
@@ -1120,7 +1150,7 @@ export default function App() {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-13T09:12:55.581Z
+                at 2025-11-13T09:57:13.937Z
             </div>
         <script src="../prettify.js"></script>
         <script>

@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">71.6% </span>
+                <span class="strong">72.28% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>58/81</span>
+                <span class='fraction'>60/83</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50.45% </span>
+                <span class="strong">53.38% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>56/111</span>
+                <span class='fraction'>63/118</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">79.71% </span>
+                <span class="strong">80.28% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>55/69</span>
+                <span class='fraction'>57/71</span>
             </div>
         
             
@@ -325,7 +325,14 @@
 <a name='L260'></a><a href='#L260'>260</a>
 <a name='L261'></a><a href='#L261'>261</a>
 <a name='L262'></a><a href='#L262'>262</a>
-<a name='L263'></a><a href='#L263'>263</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L263'></a><a href='#L263'>263</a>
+<a name='L264'></a><a href='#L264'>264</a>
+<a name='L265'></a><a href='#L265'>265</a>
+<a name='L266'></a><a href='#L266'>266</a>
+<a name='L267'></a><a href='#L267'>267</a>
+<a name='L268'></a><a href='#L268'>268</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -359,6 +366,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">12x</span>
@@ -604,9 +614,11 @@ interface CourseDetailProps {
   isLoggedIn?: boolean;
   onDelete?: (id: number) =&gt; void;
   onUpdate?: (course: Course) =&gt; void;
+  currentUser?: string | null;
+  isAdmin?: boolean;
 }
 &nbsp;
-export default function CourseDetail({ courseId, initial = null, onClose, onViewDocument, isLoggedIn = false, onDelete, onUpdate }: CourseDetailProps) {
+export default function CourseDetail({ courseId, initial = null, onClose, onViewDocument, isLoggedIn = false, onDelete, onUpdate, currentUser = null, isAdmin = false }: CourseDetailProps) {
   const [course, setCourse] = useState&lt;Course | null&gt;(initial);
   const [loading, setLoading] = useState(!initial);
   const [error, setError] = useState&lt;string | null&gt;(null);
@@ -622,6 +634,9 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
     image: ""
   });
   const [saving, setSaving] = useState(false);
+&nbsp;
+  const resolvedUser = currentUser ?? localStorage.getItem("jwt_username") ?? null;
+  const resolvedIsAdmin = isAdmin || (localStorage.getItem("jwt_is_admin") === "1");
 &nbsp;
   useEffect(() =&gt; {
     let mounted = true;
@@ -749,18 +764,18 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
             &lt;/Button&gt;
           &lt;/div&gt;
 &nbsp;
-          &lt;div className="flex items-center gap-2"&gt;
-            {isLoggedIn &amp;&amp; (
-              &lt;&gt;
-                &lt;Button onClick={startEdit} variant="outline" className="flex items-center gap-2"&gt;
-                  &lt;Edit className="w-4 h-4" /&gt; Modifier
-                &lt;/Button&gt;
-                &lt;Button onClick={handleDeleteClick} variant="destructive" className="flex items-center gap-2" disabled={deleting}&gt;
-                  &lt;Trash2 className="w-4 h-4" /&gt; {deleting ? "Suppression..." : "Supprimer le cours"}
-                &lt;/Button&gt;
-              &lt;/&gt;
-            )}
-          &lt;/div&gt;
+            &lt;div className="flex items-center gap-2"&gt;
+              {isLoggedIn &amp;&amp; (resolvedIsAdmin || !course?.author || course?.author === resolvedUser) &amp;&amp; (
+                &lt;&gt;
+                  &lt;Button onClick={startEdit} variant="outline" className="flex items-center gap-2"&gt;
+                    &lt;Edit className="w-4 h-4" /&gt; Modifier
+                  &lt;/Button&gt;
+                  &lt;Button onClick={handleDeleteClick} variant="destructive" className="flex items-center gap-2" disabled={deleting}&gt;
+                    &lt;Trash2 className="w-4 h-4" /&gt; {deleting ? "Suppression..." : "Supprimer le cours"}
+                  &lt;/Button&gt;
+                &lt;/&gt;
+              )}
+            &lt;/div&gt;
         &lt;/div&gt;
 &nbsp;
         {/* If editing, show simple form */}
@@ -856,7 +871,7 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-13T09:12:55.581Z
+                at 2025-11-13T09:57:13.937Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
