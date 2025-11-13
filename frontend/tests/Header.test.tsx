@@ -17,7 +17,7 @@ describe("Header", () => {
 
     render(<Header isLoggedIn={false} onLogin={handleLogin} onLogout={() => {}} />);
 
-    const loginButton = screen.getByRole("button", { name: /Connexion Admin/i });
+    const loginButton = screen.getByRole("button", { name: /Connexion/i });
     expect(loginButton).toBeTruthy();
     expect(screen.queryByText("Déconnexion")).toBeNull();
 

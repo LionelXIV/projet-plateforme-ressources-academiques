@@ -15,9 +15,11 @@ interface CourseDetailProps {
   isLoggedIn?: boolean;
   onDelete?: (id: number) => void;
   onUpdate?: (course: Course) => void;
+  currentUser?: string | null;
+  isAdmin?: boolean;
 }
 
-export default function CourseDetail({ courseId, initial = null, onClose, onViewDocument, isLoggedIn = false, onDelete, onUpdate }: CourseDetailProps) {
+export default function CourseDetail({ courseId, initial = null, onClose, onViewDocument, isLoggedIn = false, onDelete, onUpdate, currentUser = null, isAdmin = false }: CourseDetailProps) {
   const [course, setCourse] = useState<Course | null>(initial);
   const [loading, setLoading] = useState(!initial);
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +35,9 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
     image: ""
   });
   const [saving, setSaving] = useState(false);
+
+  const resolvedUser = currentUser ?? localStorage.getItem("jwt_username") ?? null;
+  const resolvedIsAdmin = isAdmin || (localStorage.getItem("jwt_is_admin") === "1");
 
   useEffect(() => {
     let mounted = true;
@@ -160,18 +165,18 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
             </Button>
           </div>
 
-          <div className="flex items-center gap-2">
-            {isLoggedIn && (
-              <>
-                <Button onClick={startEdit} variant="outline" className="flex items-center gap-2">
-                  <Edit className="w-4 h-4" /> Modifier
-                </Button>
-                <Button onClick={handleDeleteClick} variant="destructive" className="flex items-center gap-2" disabled={deleting}>
-                  <Trash2 className="w-4 h-4" /> {deleting ? "Suppression..." : "Supprimer le cours"}
-                </Button>
-              </>
-            )}
-          </div>
+            <div className="flex items-center gap-2">
+              {isLoggedIn && (resolvedIsAdmin || !course?.author || course?.author === resolvedUser) && (
+                <>
+                  <Button onClick={startEdit} variant="outline" className="flex items-center gap-2">
+                    <Edit className="w-4 h-4" /> Modifier
+                  </Button>
+                  <Button onClick={handleDeleteClick} variant="destructive" className="flex items-center gap-2" disabled={deleting}>
+                    <Trash2 className="w-4 h-4" /> {deleting ? "Suppression..." : "Supprimer le cours"}
+                  </Button>
+                </>
+              )}
+            </div>
         </div>
 
         {/* If editing, show simple form */}

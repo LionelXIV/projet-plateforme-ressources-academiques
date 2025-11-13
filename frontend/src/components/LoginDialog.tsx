@@ -32,6 +32,8 @@ export default function LoginDialog({ onLogin }: LoginDialogProps) {
       if (data.token) {
         localStorage.setItem("jwt_token", data.token);
       }
+      if (data.username) localStorage.setItem("jwt_username", String(data.username));
+      localStorage.setItem("jwt_is_admin", data.is_staff ? "1" : "0");
       onLogin();
     } catch (err) {
       setError("Erreur réseau");
@@ -43,7 +45,7 @@ export default function LoginDialog({ onLogin }: LoginDialogProps) {
       <DialogHeader>
         <div className="flex items-center gap-2 mb-2">
           <ShieldCheck className="w-6 h-6 text-blue-600" />
-          <DialogTitle>Connexion Administrateur</DialogTitle>
+          <DialogTitle>Connexion</DialogTitle>
         </div>
         <DialogDescription>
           Connectez-vous pour gérer les cours et ressources

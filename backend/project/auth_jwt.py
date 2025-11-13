@@ -37,26 +37,20 @@ def login_jwt(request):
             return JsonResponse({"error": "missing_credentials"}, status=400)
 
         User = get_user_model()
-        u = None
-        try:
-            u = User.objects.get(username=username)
-            logger.info("User found by username: %s active=%s", username, u.is_active)
-            username_to_auth = username
-        except User.DoesNotExist:
-            logger.info("User not found by username: %s", username)
-            username_to_auth = username
-            if "@" in (username or ""):
-                try:
-                    u_email = User.objects.get(email__iexact=username)
-                    logger.info("User found by email: %s -> username=%s", username, u_email.username)
-                    username_to_auth = u_email.username
-                    u = u_email
-                except User.DoesNotExist:
-                    logger.info("No user found with email: %s", username)
 
-        user = authenticate(request, username=username_to_auth, password=password)
+        user = authenticate(request, username=username, password=password)
+        if user is None and "@" in (username or ""):
+            try:
+                u_email = User.objects.filter(email__iexact=username).first()
+                if u_email:
+                    user = authenticate(request, username=u_email.username, password=password)
+                    logger.info("Fallback auth by email -> username=%s", u_email.username)
+            except Exception as e:
+                logger.debug("Email lookup failed: %s", e)
+                user = None
+
         if user is None or not getattr(user, "is_active", True):
-            logger.warning("Authentication failed for username=%s (user_obj=%s)", username, "exists" if u else "missing")
+            logger.warning("Authentication failed for username=%s (user_obj=%s)", username, "exists" if user else "missing")
             return JsonResponse({"error": "invalid_credentials"}, status=401)
 
         now = datetime.datetime.utcnow()
@@ -79,19 +73,45 @@ def login_jwt(request):
             token = token.decode("utf-8")
 
         return JsonResponse({
-            "token": token,
-            "username": user.get_username(),
-            "expires_in": EXP_HOURS * 3600
-        })
+        "token": token,
+        "username": user.get_username(),
+        "is_staff": bool(getattr(user, "is_staff", False)),
+        "expires_in": EXP_HOURS * 3600
+    })
     except Exception as exc:
         logger.exception("Unhandled exception in login_jwt")
         return JsonResponse({"error": "server_error", "details": str(exc)}, status=500)
 
 @csrf_exempt
 @require_http_methods(["POST"])
-def logout_jwt(request):
+def register_user(request):
     """
-    Stateless logout: client should drop token. This endpoint also logs out session.
+    POST JSON /api/auth/register/
+    Body: { "username": "...", "password": "...", "email": "..." (optional) }
+    Returns 201 + { success: true, username } on success or JSON error.
     """
-    django_logout(request)
-    return JsonResponse({"ok": True})
+    try:
+        payload = json.loads(request.body.decode() or "{}")
+    except Exception:
+        return JsonResponse({"error": "invalid_json"}, status=400)
+
+    username = (payload.get("username") or "").strip()
+    password = payload.get("password") or ""
+    email = (payload.get("email") or "").strip()
+
+    if not username or not password:
+        return JsonResponse({"error": "missing_credentials"}, status=400)
+
+    User = get_user_model()
+    if User.objects.filter(username=username).exists():
+        return JsonResponse({"error": "user_exists"}, status=409)
+
+    try:
+        user = User.objects.create_user(username=username, email=email, password=password)
+        user.is_active = True
+        user.save()
+    except Exception as e:
+        logger.exception("Failed to create user")
+        return JsonResponse({"error": "creation_failed", "details": str(e)}, status=500)
+
+    return JsonResponse({"success": True, "username": user.get_username()}, status=201)

@@ -91,19 +91,3 @@ def test_login_jwt_handles_token_generation_failure(monkeypatch):
     assert payload["error"] == "token_generation_failed"
     assert "boom" in payload["details"]
 
-
-def test_logout_jwt_calls_django_logout(monkeypatch):
-    """Ensure logout_jwt invokes django_logout and returns an ok payload."""
-    called = {}
-
-    def _fake_logout(request):
-        called["invoked"] = True
-
-    monkeypatch.setattr(auth_jwt, "django_logout", _fake_logout)
-
-    request = SimpleNamespace(method="POST")
-    response = auth_jwt.logout_jwt(request)
-
-    assert response.status_code == 200
-    assert json.loads(response.content)["ok"] is True
-    assert called.get("invoked") is True

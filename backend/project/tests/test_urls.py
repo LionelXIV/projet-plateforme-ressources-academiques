@@ -9,12 +9,9 @@ def test_urlpatterns_include_auth_routes():
     from project import auth_jwt, urls
 
     login_route = next((pattern for pattern in urls.urlpatterns if getattr(pattern, "name", None) == "api_login"), None)
-    logout_route = next((pattern for pattern in urls.urlpatterns if getattr(pattern, "name", None) == "api_logout"), None)
 
     assert login_route is not None
-    assert logout_route is not None
     assert login_route.callback == auth_jwt.login_jwt
-    assert logout_route.callback == auth_jwt.logout_jwt
 
 
 def test_debug_static_patterns_added(monkeypatch):

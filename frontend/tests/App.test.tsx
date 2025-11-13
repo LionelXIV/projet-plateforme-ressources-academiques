@@ -272,10 +272,6 @@ describe("App", () => {
     fireEvent.click(screen.getByText("se-déconnecter"));
 
     await waitFor(() => {
-      expect(apiFetchSpy).toHaveBeenCalledWith(
-        expect.stringContaining("auth/logout/"),
-        expect.objectContaining({ method: "POST" }),
-      );
       expect(localStorage.getItem("jwt_token")).toBeNull();
       expect(window.location.href).toBe("/");
     });

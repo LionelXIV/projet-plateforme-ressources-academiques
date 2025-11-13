@@ -37,19 +37,14 @@ def test_process_request_keeps_existing_user(monkeypatch):
 
     assert request.user.is_authenticated is True
 
-
 def test_process_request_sets_authenticated_user(monkeypatch):
     """Ensure a valid JWT payload resolves to the expected user."""
+    import project.jwt_middleware as jwt_mod
+
     dummy_user = DummyUser()
-    monkeypatch.setattr(
-        "backend.jwt_middleware.get_user_model",
-        lambda: SimpleNamespace(objects=DummyManager(dummy_user))
-    )
-    monkeypatch.setattr(
-        "backend.jwt_middleware.jwt",
-        SimpleNamespace(decode=lambda token, secret, algorithms=None: {"user_id": dummy_user.pk})
-    )
-    monkeypatch.setattr("backend.jwt_middleware.settings", SimpleNamespace(SECRET_KEY="secret"))
+    monkeypatch.setattr(jwt_mod, "get_user_model", lambda: SimpleNamespace(objects=DummyManager(dummy_user)), raising=False)
+    monkeypatch.setattr(jwt_mod, "jwt", SimpleNamespace(decode=lambda token, secret, algorithms=None: {"user_id": dummy_user.pk}), raising=False)
+    monkeypatch.setattr(jwt_mod, "settings", SimpleNamespace(SECRET_KEY="secret"), raising=False)
 
     request = SimpleNamespace(user=None, META={"HTTP_AUTHORIZATION": "Bearer token"})
     middleware = JWTAuthenticationMiddleware(lambda req: None)
@@ -60,6 +55,8 @@ def test_process_request_sets_authenticated_user(monkeypatch):
 
 def test_process_request_sets_anonymous_on_failure(monkeypatch):
     """Ensure decoding errors fall back to an AnonymousUser instance."""
+    import project.jwt_middleware as jwt_mod
+
     def _decode(*args, **kwargs):
         raise RuntimeError("bad token")
 
@@ -67,10 +64,8 @@ def test_process_request_sets_anonymous_on_failure(monkeypatch):
         decode=_decode,
         ExpiredSignatureError=type("ExpiredSignatureError", (Exception,), {}),
     )
-    monkeypatch.setattr("backend.jwt_middleware.jwt", fake_jwt)
-    monkeypatch.setattr(
-        "backend.jwt_middleware.settings", SimpleNamespace(SECRET_KEY="secret")
-    )
+    monkeypatch.setattr(jwt_mod, "jwt", fake_jwt, raising=False)
+    monkeypatch.setattr(jwt_mod, "settings", SimpleNamespace(SECRET_KEY="secret"), raising=False)
 
     request = SimpleNamespace(user=None, META={"HTTP_AUTHORIZATION": "Bearer broken"})
     middleware = JWTAuthenticationMiddleware(lambda req: None)

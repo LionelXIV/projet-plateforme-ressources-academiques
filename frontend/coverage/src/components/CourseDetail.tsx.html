@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">73.41% </span>
+                <span class="strong">72.28% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>58/79</span>
+                <span class='fraction'>60/83</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50.44% </span>
+                <span class="strong">53.38% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>57/113</span>
+                <span class='fraction'>63/118</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">82.08% </span>
+                <span class="strong">80.28% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>55/67</span>
+                <span class='fraction'>57/71</span>
             </div>
         
             
@@ -327,7 +327,12 @@
 <a name='L262'></a><a href='#L262'>262</a>
 <a name='L263'></a><a href='#L263'>263</a>
 <a name='L264'></a><a href='#L264'>264</a>
-<a name='L265'></a><a href='#L265'>265</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L265'></a><a href='#L265'>265</a>
+<a name='L266'></a><a href='#L266'>266</a>
+<a name='L267'></a><a href='#L267'>267</a>
+<a name='L268'></a><a href='#L268'>268</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -361,6 +366,9 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-yes">12x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">12x</span>
@@ -459,12 +467,14 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -556,10 +566,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">9x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -608,9 +614,11 @@ interface CourseDetailProps {
   isLoggedIn?: boolean;
   onDelete?: (id: number) =&gt; void;
   onUpdate?: (course: Course) =&gt; void;
+  currentUser?: string | null;
+  isAdmin?: boolean;
 }
 &nbsp;
-export default function CourseDetail({ courseId, initial = null, onClose, onViewDocument, isLoggedIn = false, onDelete, onUpdate }: CourseDetailProps) {
+export default function CourseDetail({ courseId, initial = null, onClose, onViewDocument, isLoggedIn = false, onDelete, onUpdate, currentUser = null, isAdmin = false }: CourseDetailProps) {
   const [course, setCourse] = useState&lt;Course | null&gt;(initial);
   const [loading, setLoading] = useState(!initial);
   const [error, setError] = useState&lt;string | null&gt;(null);
@@ -626,6 +634,9 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
     image: ""
   });
   const [saving, setSaving] = useState(false);
+&nbsp;
+  const resolvedUser = currentUser ?? localStorage.getItem("jwt_username") ?? null;
+  const resolvedIsAdmin = isAdmin || (localStorage.getItem("jwt_is_admin") === "1");
 &nbsp;
   useEffect(() =&gt; {
     let mounted = true;
@@ -716,12 +727,13 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
       image: form.image,
     };
     try {
-      const resp = await apiFetch(`courses/${course.id}/`, {
+      const resp = await apiFetch(`/courses/${course?.id}/`, {
         method: "PUT",
         body: JSON.stringify(payload),
       });
       <span class="missing-if-branch" title="if path not taken" >I</span>if (!resp.ok) {
         const body = <span class="cstat-no" title="statement not covered" >await resp.json().catch(<span class="fstat-no" title="function not covered" >() =&gt; (<span class="cstat-no" title="statement not covered" >{</span>}));</span></span>
+<span class="cstat-no" title="statement not covered" >        console.error('[CourseDetail] save failed body=', body);</span>
 <span class="cstat-no" title="statement not covered" >        throw new Error(body.error || body.detail || `HTTP ${resp.status}`);</span>
       }
       const updated = await resp.json();
@@ -729,6 +741,7 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
       setEditing(false);
       <span class="missing-if-branch" title="else path not taken" >E</span>if (onUpdate) onUpdate(updated);
     } catch (e: any) {
+<span class="cstat-no" title="statement not covered" >      console.error('[CourseDetail] save error', e);</span>
 <span class="cstat-no" title="statement not covered" >      setError(e?.message || "Erreur lors de la sauvegarde");</span>
     } finally {
       setSaving(false);
@@ -751,18 +764,18 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
             &lt;/Button&gt;
           &lt;/div&gt;
 &nbsp;
-          &lt;div className="flex items-center gap-2"&gt;
-            {isLoggedIn &amp;&amp; (
-              &lt;&gt;
-                &lt;Button onClick={startEdit} variant="outline" className="flex items-center gap-2"&gt;
-                  &lt;Edit className="w-4 h-4" /&gt; Modifier
-                &lt;/Button&gt;
-                &lt;Button onClick={handleDeleteClick} variant="destructive" className="flex items-center gap-2" disabled={deleting}&gt;
-                  &lt;Trash2 className="w-4 h-4" /&gt; {deleting ? "Suppression..." : "Supprimer le cours"}
-                &lt;/Button&gt;
-              &lt;/&gt;
-            )}
-          &lt;/div&gt;
+            &lt;div className="flex items-center gap-2"&gt;
+              {isLoggedIn &amp;&amp; (resolvedIsAdmin || !course?.author || course?.author === resolvedUser) &amp;&amp; (
+                &lt;&gt;
+                  &lt;Button onClick={startEdit} variant="outline" className="flex items-center gap-2"&gt;
+                    &lt;Edit className="w-4 h-4" /&gt; Modifier
+                  &lt;/Button&gt;
+                  &lt;Button onClick={handleDeleteClick} variant="destructive" className="flex items-center gap-2" disabled={deleting}&gt;
+                    &lt;Trash2 className="w-4 h-4" /&gt; {deleting ? "Suppression..." : "Supprimer le cours"}
+                  &lt;/Button&gt;
+                &lt;/&gt;
+              )}
+            &lt;/div&gt;
         &lt;/div&gt;
 &nbsp;
         {/* If editing, show simple form */}
@@ -802,10 +815,6 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
                     &lt;AvatarFallback className="bg-blue-600 text-white"&gt;{(course.instructor || <span class="branch-1 cbranch-no" title="branch not covered" >" "</span>).split(' ').map(n =&gt; n?.[0] || <span class="branch-1 cbranch-no" title="branch not covered" >'').j</span>oin('').slice(0,3)}&lt;/AvatarFallback&gt;
                   &lt;/Avatar&gt;
                   &lt;span&gt;{course.instructor || <span class="branch-1 cbranch-no" title="branch not covered" >"Instructeur inconnu"}&lt;/span&gt;</span>
-                &lt;/div&gt;
-                &lt;div className="flex items-center gap-2"&gt;
-                  &lt;Users className="w-5 h-5" /&gt;
-                  &lt;span&gt;{(course.students ?? <span class="branch-1 cbranch-no" title="branch not covered" >0).t</span>oLocaleString()} étudiants&lt;/span&gt;
                 &lt;/div&gt;
               &lt;/div&gt;
             &lt;/div&gt;
@@ -862,7 +871,7 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-05T23:34:09.848Z
+                at 2025-11-13T09:57:13.937Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
