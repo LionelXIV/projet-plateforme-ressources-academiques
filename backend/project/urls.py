@@ -8,7 +8,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('api/auth/login/', auth_jwt.login_jwt, name='api_login'),
-    path('api/auth/logout/', auth_jwt.logout_jwt, name='api_logout'),
     path('api/auth/register/', auth_jwt.register_user, name='api_register'),
     path('api/core/', include('backend.core.urls')),
 ]
