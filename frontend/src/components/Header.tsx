@@ -3,6 +3,7 @@ import { GraduationCap, LogOut, ShieldCheck } from "lucide-react";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
 import LoginDialog from "./LoginDialog";
+import RegisterDialog from "./RegisterDialog";
 
 interface HeaderProps {
   isLoggedIn: boolean;
@@ -12,10 +13,16 @@ interface HeaderProps {
 
 export default function Header({ isLoggedIn, onLogin, onLogout }: HeaderProps) {
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
+  const [isRegisterDialogOpen, setIsRegisterDialogOpen] = useState(false);
 
   const handleLogin = () => {
     onLogin();
     setIsLoginDialogOpen(false);
+  };
+
+  const handleRegister = () => {
+    setIsRegisterDialogOpen(false);
+    setIsLoginDialogOpen(true);
   };
 
   return (
@@ -44,19 +51,35 @@ export default function Header({ isLoggedIn, onLogin, onLogout }: HeaderProps) {
                 Déconnexion
               </Button>
             ) : (
-              <Dialog open={isLoginDialogOpen} onOpenChange={setIsLoginDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-white text-blue-600 hover:bg-blue-50 shadow-md">
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-5 h-5" />
-                      <span>Connexion Admin</span>
-                    </div>
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <LoginDialog onLogin={handleLogin} />
-                </DialogContent>
-              </Dialog>
+              <>
+                <Dialog open={isLoginDialogOpen} onOpenChange={setIsLoginDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-white text-blue-600 hover:bg-blue-50 shadow-md">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5" />
+                        <span>Connexion</span>
+                      </div>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <LoginDialog onLogin={handleLogin} />
+                  </DialogContent>
+                </Dialog>
+
+                <Dialog open={isRegisterDialogOpen} onOpenChange={setIsRegisterDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-white text-blue-600 hover:bg-blue-50 shadow-md">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-5 h-5" />
+                        <span>Inscription</span>
+                      </div>
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <RegisterDialog onRegister={handleRegister} />
+                  </DialogContent>
+                </Dialog>
+              </>
             )}
           </div>
         </div>

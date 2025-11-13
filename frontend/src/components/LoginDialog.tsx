@@ -43,7 +43,7 @@ export default function LoginDialog({ onLogin }: LoginDialogProps) {
       <DialogHeader>
         <div className="flex items-center gap-2 mb-2">
           <ShieldCheck className="w-6 h-6 text-blue-600" />
-          <DialogTitle>Connexion Administrateur</DialogTitle>
+          <DialogTitle>Connexion</DialogTitle>
         </div>
         <DialogDescription>
           Connectez-vous pour gérer les cours et ressources

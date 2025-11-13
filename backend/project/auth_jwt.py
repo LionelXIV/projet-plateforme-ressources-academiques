@@ -89,15 +89,6 @@ def login_jwt(request):
 
 @csrf_exempt
 @require_http_methods(["POST"])
-def logout_jwt(request):
-    """
-    Stateless logout: client should drop token. This endpoint also logs out session.
-    """
-    django_logout(request)
-    return JsonResponse({"ok": True})
-
-@csrf_exempt
-@require_http_methods(["POST"])
 def register_user(request):
     """
     POST JSON /api/auth/register/

@@ -69,15 +69,9 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    try {
-      const base = import.meta.env.VITE_API_URL_LOGIN;
-      await apiFetch(`${base}auth/logout/`, { method: "POST" });
-    } catch (e) {
-    } finally {
-      localStorage.removeItem("jwt_token");
-      setIsLoggedIn(false);
-      window.location.href = "/";
-    }
+    localStorage.removeItem("jwt_token");
+    setIsLoggedIn(false);
+    window.location.href = "/";
   };
 
   const handleViewCourseDetail = async (course: Course) => {

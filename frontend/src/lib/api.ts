@@ -42,3 +42,15 @@ export async function deleteCourse(pk: number | string | { id?: number; pk?: num
     }
     return resp.json();
 }
+
+export async function registerUser(username: string, password: string, email?: string) {
+    const baseAuth = import.meta.env.VITE_API_URL_LOGIN || import.meta.env.VITE_API_URL || '';
+    const url = `${baseAuth.replace(/\/$/, '')}/auth/register/`.replace(/\/{2,}/g, '/').replace(':/', '://');
+    const resp = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, email }),
+        credentials: 'include',
+    });
+    return resp;
+}
