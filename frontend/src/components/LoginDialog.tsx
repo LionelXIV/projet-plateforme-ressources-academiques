@@ -32,6 +32,8 @@ export default function LoginDialog({ onLogin }: LoginDialogProps) {
       if (data.token) {
         localStorage.setItem("jwt_token", data.token);
       }
+      if (data.username) localStorage.setItem("jwt_username", String(data.username));
+      localStorage.setItem("jwt_is_admin", data.is_staff ? "1" : "0");
       onLogin();
     } catch (err) {
       setError("Erreur réseau");

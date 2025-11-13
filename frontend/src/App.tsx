@@ -22,6 +22,8 @@ import { apiFetch } from "./lib/api"
 
 export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,6 +38,8 @@ export default function App() {
   useEffect(() => {
     const token = localStorage.getItem("jwt_token");
     setIsLoggedIn(Boolean(token));
+    setCurrentUser(localStorage.getItem("jwt_username"));
+    setIsAdmin(localStorage.getItem("jwt_is_admin") === "1");
   }, []);
 
   useEffect(() => {
@@ -66,10 +70,14 @@ export default function App() {
 
   const handleLogin = () => {
     setIsLoggedIn(true);
+    setCurrentUser(localStorage.getItem("jwt_username"));
+    setIsAdmin(localStorage.getItem("jwt_is_admin") === "1");
   };
 
   const handleLogout = async () => {
     localStorage.removeItem("jwt_token");
+    localStorage.removeItem("jwt_username");
+    localStorage.removeItem("jwt_is_admin");
     setIsLoggedIn(false);
     window.location.href = "/";
   };
@@ -199,6 +207,8 @@ export default function App() {
           isLoggedIn={isLoggedIn}
           onDelete={handleCourseDeleted}
           onUpdate={handleCourseUpdated}
+          currentUser={currentUser}
+          isAdmin={isAdmin}
         />
         <DocumentViewer
           document={viewerDocument}

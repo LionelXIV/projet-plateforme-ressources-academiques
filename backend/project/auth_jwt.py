@@ -73,10 +73,11 @@ def login_jwt(request):
             token = token.decode("utf-8")
 
         return JsonResponse({
-            "token": token,
-            "username": user.get_username(),
-            "expires_in": EXP_HOURS * 3600
-        })
+        "token": token,
+        "username": user.get_username(),
+        "is_staff": bool(getattr(user, "is_staff", False)),
+        "expires_in": EXP_HOURS * 3600
+    })
     except Exception as exc:
         logger.exception("Unhandled exception in login_jwt")
         return JsonResponse({"error": "server_error", "details": str(exc)}, status=500)
