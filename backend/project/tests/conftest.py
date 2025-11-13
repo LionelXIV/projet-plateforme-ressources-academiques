@@ -16,7 +16,7 @@ if REPO_ROOT not in sys.path:
 
 
 os.environ.setdefault("SECRET_KEY", "test-secret")
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.project.settings")
 
 if "jwt" not in sys.modules:
     fake_jwt = SimpleNamespace(
@@ -28,7 +28,7 @@ if "jwt" not in sys.modules:
 
 try:
     import django
-except ImportError:  # pragma: no cover
+except ImportError:
     django = None
 
 if django is not None:
