@@ -37,26 +37,20 @@ def login_jwt(request):
             return JsonResponse({"error": "missing_credentials"}, status=400)
 
         User = get_user_model()
-        u = None
-        try:
-            u = User.objects.get(username=username)
-            logger.info("User found by username: %s active=%s", username, u.is_active)
-            username_to_auth = username
-        except User.DoesNotExist:
-            logger.info("User not found by username: %s", username)
-            username_to_auth = username
-            if "@" in (username or ""):
-                try:
-                    u_email = User.objects.get(email__iexact=username)
-                    logger.info("User found by email: %s -> username=%s", username, u_email.username)
-                    username_to_auth = u_email.username
-                    u = u_email
-                except User.DoesNotExist:
-                    logger.info("No user found with email: %s", username)
 
-        user = authenticate(request, username=username_to_auth, password=password)
+        user = authenticate(request, username=username, password=password)
+        if user is None and "@" in (username or ""):
+            try:
+                u_email = User.objects.filter(email__iexact=username).first()
+                if u_email:
+                    user = authenticate(request, username=u_email.username, password=password)
+                    logger.info("Fallback auth by email -> username=%s", u_email.username)
+            except Exception as e:
+                logger.debug("Email lookup failed: %s", e)
+                user = None
+
         if user is None or not getattr(user, "is_active", True):
-            logger.warning("Authentication failed for username=%s (user_obj=%s)", username, "exists" if u else "missing")
+            logger.warning("Authentication failed for username=%s (user_obj=%s)", username, "exists" if user else "missing")
             return JsonResponse({"error": "invalid_credentials"}, status=401)
 
         now = datetime.datetime.utcnow()
