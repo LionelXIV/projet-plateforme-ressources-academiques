@@ -11,9 +11,9 @@ def test_wsg_application_initialised(monkeypatch):
     fake_wsg = types.ModuleType("django.core.wsgi")
     fake_wsg.get_wsgi_application = lambda: "wsgi-app"
     monkeypatch.setitem(sys.modules, "django.core.wsgi", fake_wsg)
-    monkeypatch.setenv("DJANGO_SETTINGS_MODULE", "backend.settings")
+    monkeypatch.setenv("DJANGO_SETTINGS_MODULE", "backend.project.settings")
 
-    sys.modules.pop("backend.wsgi", None)
-    module = importlib.import_module("backend.wsgi")
+    sys.modules.pop("backend.project.wsgi", None)
+    module = importlib.import_module("backend.project.wsgi")
 
     assert getattr(module, "application") == "wsgi-app"

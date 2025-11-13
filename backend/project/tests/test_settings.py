@@ -10,9 +10,9 @@ import pytest
 def test_secret_key_loaded_from_env(monkeypatch):
     """Ensure importing settings picks up SECRET_KEY from the environment."""
     monkeypatch.setenv("SECRET_KEY", "from-env")
-    sys.modules.pop("backend.settings", None)
+    sys.modules.pop("backend.project.settings", None)
 
-    settings = importlib.import_module("backend.settings")
+    settings = importlib.import_module("backend.project.settings")
 
     assert settings.SECRET_KEY == "from-env"
     assert settings.JWT_ALGORITHM == "HS256"
@@ -22,12 +22,12 @@ def test_secret_key_loaded_from_env(monkeypatch):
 def test_missing_secret_key_raises(monkeypatch):
     """Ensure missing SECRET_KEY triggers a runtime error during import."""
     monkeypatch.delenv("SECRET_KEY", raising=False)
-    sys.modules.pop("backend.settings", None)
+    sys.modules.pop("backend.project.settings", None)
 
     with pytest.raises(RuntimeError):
-        importlib.import_module("backend.settings")
+        importlib.import_module("backend.project.settings")
 
     # restore module for other tests
     monkeypatch.setenv("SECRET_KEY", "restored")
-    sys.modules.pop("backend.settings", None)
-    importlib.import_module("backend.settings")
+    sys.modules.pop("backend.project.settings", None)
+    importlib.import_module("backend.project.settings")
