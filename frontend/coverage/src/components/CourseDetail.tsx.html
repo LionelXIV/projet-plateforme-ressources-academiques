@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">73.41% </span>
+                <span class="strong">71.6% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>58/79</span>
+                <span class='fraction'>58/81</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">50.44% </span>
+                <span class="strong">50.45% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>57/113</span>
+                <span class='fraction'>56/111</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">82.08% </span>
+                <span class="strong">79.71% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>55/67</span>
+                <span class='fraction'>55/69</span>
             </div>
         
             
@@ -325,9 +325,7 @@
 <a name='L260'></a><a href='#L260'>260</a>
 <a name='L261'></a><a href='#L261'>261</a>
 <a name='L262'></a><a href='#L262'>262</a>
-<a name='L263'></a><a href='#L263'>263</a>
-<a name='L264'></a><a href='#L264'>264</a>
-<a name='L265'></a><a href='#L265'>265</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L263'></a><a href='#L263'>263</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -459,12 +457,14 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
@@ -536,10 +536,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">18x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -716,12 +712,13 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
       image: form.image,
     };
     try {
-      const resp = await apiFetch(`courses/${course.id}/`, {
+      const resp = await apiFetch(`/courses/${course?.id}/`, {
         method: "PUT",
         body: JSON.stringify(payload),
       });
       <span class="missing-if-branch" title="if path not taken" >I</span>if (!resp.ok) {
         const body = <span class="cstat-no" title="statement not covered" >await resp.json().catch(<span class="fstat-no" title="function not covered" >() =&gt; (<span class="cstat-no" title="statement not covered" >{</span>}));</span></span>
+<span class="cstat-no" title="statement not covered" >        console.error('[CourseDetail] save failed body=', body);</span>
 <span class="cstat-no" title="statement not covered" >        throw new Error(body.error || body.detail || `HTTP ${resp.status}`);</span>
       }
       const updated = await resp.json();
@@ -729,6 +726,7 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
       setEditing(false);
       <span class="missing-if-branch" title="else path not taken" >E</span>if (onUpdate) onUpdate(updated);
     } catch (e: any) {
+<span class="cstat-no" title="statement not covered" >      console.error('[CourseDetail] save error', e);</span>
 <span class="cstat-no" title="statement not covered" >      setError(e?.message || "Erreur lors de la sauvegarde");</span>
     } finally {
       setSaving(false);
@@ -803,10 +801,6 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
                   &lt;/Avatar&gt;
                   &lt;span&gt;{course.instructor || <span class="branch-1 cbranch-no" title="branch not covered" >"Instructeur inconnu"}&lt;/span&gt;</span>
                 &lt;/div&gt;
-                &lt;div className="flex items-center gap-2"&gt;
-                  &lt;Users className="w-5 h-5" /&gt;
-                  &lt;span&gt;{(course.students ?? <span class="branch-1 cbranch-no" title="branch not covered" >0).t</span>oLocaleString()} étudiants&lt;/span&gt;
-                &lt;/div&gt;
               &lt;/div&gt;
             &lt;/div&gt;
           &lt;/div&gt;
@@ -862,7 +856,7 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-05T23:34:09.848Z
+                at 2025-11-13T09:12:55.581Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
