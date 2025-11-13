@@ -95,3 +95,37 @@ def logout_jwt(request):
     """
     django_logout(request)
     return JsonResponse({"ok": True})
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def register_user(request):
+    """
+    POST JSON /api/auth/register/
+    Body: { "username": "...", "password": "...", "email": "..." (optional) }
+    Returns 201 + { success: true, username } on success or JSON error.
+    """
+    try:
+        payload = json.loads(request.body.decode() or "{}")
+    except Exception:
+        return JsonResponse({"error": "invalid_json"}, status=400)
+
+    username = (payload.get("username") or "").strip()
+    password = payload.get("password") or ""
+    email = (payload.get("email") or "").strip()
+
+    if not username or not password:
+        return JsonResponse({"error": "missing_credentials"}, status=400)
+
+    User = get_user_model()
+    if User.objects.filter(username=username).exists():
+        return JsonResponse({"error": "user_exists"}, status=409)
+
+    try:
+        user = User.objects.create_user(username=username, email=email, password=password)
+        user.is_active = True
+        user.save()
+    except Exception as e:
+        logger.exception("Failed to create user")
+        return JsonResponse({"error": "creation_failed", "details": str(e)}, status=500)
+
+    return JsonResponse({"success": True, "username": user.get_username()}, status=201)
