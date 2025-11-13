@@ -1,5 +1,5 @@
 """
-Tests for backend.settings to validate environment-derived configuration.
+Tests for backend.project.settings to validate environment-derived configuration.
 """
 import importlib
 import sys
