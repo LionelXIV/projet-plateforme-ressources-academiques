@@ -7,7 +7,7 @@ export async function apiFetch(path: string, init: RequestInit = {}) {
     if (!headers.has('Content-Type') && !(init.body instanceof FormData)) {
         headers.set('Content-Type', 'application/json');
     }
-    const url = path.startsWith('http') ? path : `${base.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+    const url = `${base}${path}`;
     const resp = await fetch(url, { ...init, headers, credentials: 'include' });
     return resp;
 }

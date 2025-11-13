@@ -187,7 +187,6 @@ export default function AddCourseDialog({ isOpen, onClose, onAddCourse, nextId }
         instructor: newCourse.instructor,
         category: newCourse.category,
         level: newCourse.level,
-        students: Number(newCourse.students) || 0,
         image: imageInputMode === "url" ? newCourse.image : "",
         documents: newDocuments.map(d => ({
           name: d.name,
@@ -197,7 +196,7 @@ export default function AddCourseDialog({ isOpen, onClose, onAddCourse, nextId }
         }))
       };
 
-      const resp = await apiFetch(`courses/creer/`, {
+      const resp = await apiFetch(`/courses/creer/`, {
         method: "POST",
         body: JSON.stringify(payload),
       });

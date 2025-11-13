@@ -123,12 +123,13 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
       image: form.image,
     };
     try {
-      const resp = await apiFetch(`courses/${course.id}/`, {
+      const resp = await apiFetch(`/courses/${course?.id}/`, {
         method: "PUT",
         body: JSON.stringify(payload),
       });
       if (!resp.ok) {
         const body = await resp.json().catch(() => ({}));
+        console.error('[CourseDetail] save failed body=', body);
         throw new Error(body.error || body.detail || `HTTP ${resp.status}`);
       }
       const updated = await resp.json();
@@ -136,6 +137,7 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
       setEditing(false);
       if (onUpdate) onUpdate(updated);
     } catch (e: any) {
+      console.error('[CourseDetail] save error', e);
       setError(e?.message || "Erreur lors de la sauvegarde");
     } finally {
       setSaving(false);
@@ -209,10 +211,6 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
                     <AvatarFallback className="bg-blue-600 text-white">{(course.instructor || " ").split(' ').map(n => n?.[0] || '').join('').slice(0,3)}</AvatarFallback>
                   </Avatar>
                   <span>{course.instructor || "Instructeur inconnu"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  <span>{(course.students ?? 0).toLocaleString()} étudiants</span>
                 </div>
               </div>
             </div>
