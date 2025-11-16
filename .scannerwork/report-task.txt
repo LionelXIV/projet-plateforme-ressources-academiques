@@ -1,0 +1,6 @@
+projectKey=plateforme-ressources-academiques
+serverUrl=http://localhost:9000
+serverVersion=25.10.0.114319
+dashboardUrl=http://localhost:9000/dashboard?id=plateforme-ressources-academiques
+ceTaskId=1225b9eb-923c-4349-85e1-aef9d9ff8ef7
+ceTaskUrl=http://localhost:9000/api/ce/task?id=1225b9eb-923c-4349-85e1-aef9d9ff8ef7

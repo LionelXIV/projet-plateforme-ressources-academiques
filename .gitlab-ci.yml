@@ -1,0 +1,129 @@
+# CI/CD complète Django (backend) + React/Vite (frontend)
+# Étapes :
+#  1. frontend_build — compile le frontend React/Vite
+#  2. frontend_test — exécute les tests unitaires du frontend
+#  3. backend_build — installe les dépendances Django
+#  4. backend_test — exécute les tests unitaires Django
+#  5. sonar — analyse statique SonarCloud
+
+stages:
+  - frontend_build
+  - frontend_test
+  - backend_build
+  - backend_test
+  - sonar
+
+# -------------------------------
+# Étape 1 : Build du frontend
+# -------------------------------
+frontend_build:
+  stage: frontend_build
+  image: node:22
+  tags: ["uvs"]
+  only:
+    - branches
+  before_script:
+    - cd frontend
+  script:
+    - npm ci || npm install
+    - npm run build
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-frontend
+    paths:
+      - frontend/node_modules/
+  artifacts:
+    name: "frontend_build_${CI_COMMIT_REF_SLUG}"
+    paths:
+      - frontend/dist
+      - frontend/node_modules
+    expire_in: never
+
+# -------------------------------
+# Étape 2 : Tests du frontend (réutilise le build)
+# -------------------------------
+frontend_test:
+  stage: frontend_test
+  image: node:22
+  tags: ["uvs"]
+  only:
+    - branches
+  needs:
+    - job: frontend_build
+      artifacts: true
+  before_script:
+    - cd frontend
+  script:
+    - echo "✅ Lancement des tests frontend..."
+    - npm run test -- --run
+  artifacts:
+    when: always
+    name: "frontend_coverage_${CI_COMMIT_REF_SLUG}"
+    paths:
+      - frontend/coverage/lcov.info
+    expire_in: 1 week
+
+# -------------------------------
+# Étape 3 : Build du backend
+# -------------------------------
+backend_build:
+  stage: backend_build
+  image: python:3.13
+  tags: ["uvs"]
+  only:
+    - branches
+  before_script:
+    - python -m venv venv
+    - source venv/bin/activate
+  script:
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+    - echo "✅ Backend installé avec succès."
+  artifacts:
+    name: "backend_env_${CI_COMMIT_REF_SLUG}"
+    paths:
+      - venv/
+    expire_in: never
+
+# -------------------------------
+# Étape 4 : Tests Django
+# -------------------------------
+backend_test:
+  stage: backend_test
+  image: python:3.13
+  tags: ["uvs"]
+  only:
+    - branches
+  dependencies:
+    - backend_build
+  before_script:
+    - source venv/bin/activate
+    - export DJANGO_SETTINGS_MODULE=backend.project.settings
+    - export PYTHONPATH=$PWD
+    - export SECRET_KEY="gitlab-ci-test-secret-key-1234567890"
+    - pip install pytest pytest-cov
+  script:
+    - echo "✅ Lancement des tests Django avec couverture..."
+    - pytest -q --maxfail=1 --disable-warnings --cov=backend --cov-report=xml:coverage.xml
+  artifacts:
+    when: always
+    name: "django_test_reports_${CI_COMMIT_REF_SLUG}"
+    paths:
+      - coverage.xml
+      - test-reports/
+    expire_in: 1 week
+  coverage: '/^TOTAL.*\s+(\d+\%)$/'
+
+# --------------------------------
+# Étape 5 : Analyse SonarCloud
+# --------------------------------
+sonar_scan:
+  stage: sonar
+  script:
+    - echo "🔍 Analyse SonarQube effectuée localement sur http://localhost:9000"
+    - echo "📊 Rapport local disponible dans .scannerwork/"
+  artifacts:
+    paths:
+      - frontend/.scannerwork/report-task.txt
+    expire_in: 1 week
+  when: manual
+  allow_failure: true

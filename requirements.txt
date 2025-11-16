@@ -1,0 +1,13 @@
+asgiref==3.10.0
+cffi==2.0.0
+cryptography==46.0.3
+Django==5.2.7
+django-cors-headers==4.9.0
+dotenv==0.9.9
+jwt==1.4.0
+pycparser==2.23
+PyJWT==2.10.1
+python-dotenv==1.2.1
+setuptools==80.9.0
+sqlparse==0.5.3
+wheel==0.45.1

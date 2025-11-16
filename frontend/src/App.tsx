@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
+<<<<<<< HEAD
 import { Plus, ClipboardList  } from "lucide-react";
+=======
+import { Plus } from "lucide-react";
+>>>>>>> main
 import { Course, Document } from "./types";
 import Header from "./components/Header";
 import SearchFilters from "./components/SearchFilters";
@@ -9,7 +13,10 @@ import DocumentViewer from "./components/DocumentViewer";
 import AddCourseDialog from "./components/AddCourseDialog";
 import AboutSection from "./components/AboutSection";
 import Footer from "./components/Footer";
+<<<<<<< HEAD
 import QuizDialog from "./components/QuizDialog"; 
+=======
+>>>>>>> main
 import {
   Pagination,
   PaginationContent,
@@ -22,7 +29,10 @@ import {
 import { apiFetch } from "./lib/api"
 
 export default function App() {
+<<<<<<< HEAD
   const [showQuizDialog, setShowQuizDialog] = useState(false);
+=======
+>>>>>>> main
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
