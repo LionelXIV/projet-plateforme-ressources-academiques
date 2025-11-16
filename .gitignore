@@ -18,3 +18,6 @@ venv/
 # Environnement IDE
 .vscode/
 .idea/
+
+# cle Hugging Face
+.env

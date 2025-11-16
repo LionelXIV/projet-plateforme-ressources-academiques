@@ -37,7 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+<<<<<<< Updated upstream:plateforme_ressources_academiques_django/settings.py
     'applications',
+=======
+    'corsheaders',
+    'backend.core',
+    'backend.courses',
+    'backend.quizzes',
+>>>>>>> Stashed changes:backend/project/settings.py
 ]
 
 MIDDLEWARE = [
