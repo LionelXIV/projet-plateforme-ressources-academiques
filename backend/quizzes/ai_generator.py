@@ -1,50 +1,26 @@
+import os
 import json
 import re
 import time
 from dotenv import load_dotenv
+from openai import OpenAI
 
-import os
-from typing import Optional
-
-try:
-    from openai import OpenAI
-except Exception:
-    OpenAI = None
-
-from django.conf import settings
+# ================================
+# 1) ENV
+# ================================
+load_dotenv()
 
 MODEL = "Qwen/Qwen2.5-7B-Instruct"
 
-# ================================
-# 1) ENV + CLIENT
-# ================================
-
-def _get_openai_client() -> Optional["OpenAI"]:
-    """
-    Retourne une instance OpenAI si la clé est configurée, sinon None.
-    Ne provoque pas d'exception à l'import.
-    """
-    try:
-        load_dotenv()
-    except Exception:
-        pass
-
-    api_key = os.getenv("OPENAI_API_KEY") or getattr(settings, "OPENAI_API_KEY", None)
-    hf_token = os.getenv("HF_TOKEN") or getattr(settings, "HF_TOKEN", None)
-    if OpenAI is None:
-        return None
-
-    try:
-        if api_key:
-            return OpenAI(api_key=api_key)
-        if hf_token:
-            try:
-                return OpenAI(base_url="https://router.huggingface.co/v1", api_key=hf_token)
-            except TypeError:
-                return OpenAI(hf_token)
-    except Exception:
-        return None
-
+def get_openai_client():
+    """Crée et retourne un client OpenAI au moment où on en a besoin."""
+    api_key = os.getenv("HF_TOKEN")
+    if not api_key:
+        raise Exception("HF_TOKEN environment variable is missing")
+    return OpenAI(
+        base_url="https://router.huggingface.co/v1",
+        api_key=api_key
+    )
 
 
 # ================================
@@ -84,7 +60,6 @@ Réponds uniquement avec du JSON pur.
 # 3) FONCTION : Lecture RL + feedback
 # ================================
 def build_rl_feedback():
-    """Construit un feedback basé sur rl_memory.jsonl"""
     if not os.path.exists("rl_memory.jsonl"):
         return ""
 
@@ -101,15 +76,12 @@ def build_rl_feedback():
 
                 if reward <= -1:
                     penalties.extend(errors)
-
                 if reward >= 1:
                     good_examples.append(gen)
-
             except:
                 pass
 
     text = ""
-
     if penalties:
         text += "Erreurs à éviter absolument :\n"
         for p in set(penalties):
@@ -139,30 +111,23 @@ def validate(json_block):
     errors = []
     try:
         data = json.loads(json_block)
-
         if not isinstance(data, list):
             errors.append("not_list")
-
         if len(data) != 10:
             errors.append("wrong_length")
 
         for q in data:
             if q.get("type") != "QCM":
                 errors.append("wrong_type")
-
             if q.get("options") != ["A","B","C","D"]:
                 errors.append("wrong_options")
-
             if q.get("answer") not in ["A","B","C","D"]:
                 errors.append("wrong_answer")
-
             txt = q.get("question", "")
             if "A:" not in txt or "B:" not in txt or "C:" not in txt or "D:" not in txt:
                 errors.append("missing_choices_in_question")
-
     except:
         errors.append("invalid_json")
-
     return errors
 
 
@@ -186,9 +151,6 @@ def save_rl_event(theme, reward, raw, errors):
 # ================================
 def generate_quiz(theme):
 
-    client = _get_openai_client()
-    if client is None:
-        raise RuntimeError("OpenAI client not configured. Set OPENAI_API_KEY or HF_TOKEN to enable quiz generation.")
     # 🔥 AJOUT : Feedback RL dans le prompt
     rl_feedback = build_rl_feedback()
 
@@ -200,33 +162,26 @@ def generate_quiz(theme):
         + f"\nTHÈME : {theme}\n"
     )
 
-    raw = ""
-    json_block = None
+    client = get_openai_client()  # ⚡ client créé ici, pas au niveau du module
+
     for i in range(5):
         print(f"⏳ Tentative {i+1}/5...")
-        try:
-            resp = client.chat.completions.create(
-                model=MODEL,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=1500,
-                temperature=0.3,
-            )
-        except Exception as e:
-            print("error calling generation API:", e)
-            time.sleep(0.5)
-            continue
 
-        try:
-            raw = getattr(resp.choices[0].message, "content", "") if hasattr(resp, "choices") else str(resp)
-        except Exception:
-            raw = str(resp)
+        resp = client.chat.completions.create(
+            model=MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=1500,
+            temperature=0.3,
+        )
 
+        raw = resp.choices[0].message.content
         json_block = extract_json(raw)
+
         if json_block:
             try:
                 json.loads(json_block)
                 return json_block, raw
-            except Exception:
-                continue
+            except:
+                pass
 
-    return None, raw
+    return json_block, raw
