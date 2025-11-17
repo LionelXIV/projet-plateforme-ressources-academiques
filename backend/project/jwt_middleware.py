@@ -9,7 +9,8 @@ LEEWAY_SECONDS = int(getattr(settings, "JWT_LEEWAY_SECONDS", 18000) or 0)
 
 class JWTAuthenticationMiddleware(MiddlewareMixin):
     def process_request(self, request):
-        print(">>> [MIDDLEWARE] Incoming request:", request.path)
+        path = getattr(request, "path", None)
+        print(">>> [MIDDLEWARE] Incoming request:", path)
 
         # Inspect AUTH header
         auth = request.META.get("HTTP_AUTHORIZATION", "")
