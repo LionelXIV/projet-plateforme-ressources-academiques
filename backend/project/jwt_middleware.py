@@ -12,9 +12,16 @@ class JWTAuthenticationMiddleware(MiddlewareMixin):
         path = getattr(request, "path", None)
         print(">>> [MIDDLEWARE] Incoming request:", path)
 
+        meta = getattr(request, "META", {}) or {}
+
         # Inspect AUTH header
-        auth = request.META.get("HTTP_AUTHORIZATION", "")
+        auth = meta.get("HTTP_AUTHORIZATION", "") or ""
         print(">>> [MIDDLEWARE] AUTH HEADER RAW:", repr(auth))
+
+        # Already authenticated (tests may pass Stub)
+        user = getattr(request, "user", None)
+        if user and getattr(user, "is_authenticated", False):
+            return None
 
         # If no header → skip
         if not auth:
