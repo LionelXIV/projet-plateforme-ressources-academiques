@@ -28,3 +28,6 @@ build/
 
 # cle Hugging Face
 .env
+
+#frontend
+frontend/node_modules/

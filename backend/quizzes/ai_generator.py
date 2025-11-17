@@ -1,20 +1,50 @@
-import os
 import json
 import re
 import time
 from dotenv import load_dotenv
-from openai import OpenAI
+
+import os
+from typing import Optional
+
+try:
+    from openai import OpenAI
+except Exception:
+    OpenAI = None
+
+from django.conf import settings
+
+MODEL = "Qwen/Qwen2.5-7B-Instruct"
 
 # ================================
 # 1) ENV + CLIENT
 # ================================
-load_dotenv()
-client = OpenAI(
-    base_url="https://router.huggingface.co/v1",
-    api_key=os.getenv("HF_TOKEN"),
-)
 
-MODEL = "Qwen/Qwen2.5-7B-Instruct"
+def _get_openai_client() -> Optional["OpenAI"]:
+    """
+    Retourne une instance OpenAI si la clé est configurée, sinon None.
+    Ne provoque pas d'exception à l'import.
+    """
+    try:
+        load_dotenv()
+    except Exception:
+        pass
+
+    api_key = os.getenv("OPENAI_API_KEY") or getattr(settings, "OPENAI_API_KEY", None)
+    hf_token = os.getenv("HF_TOKEN") or getattr(settings, "HF_TOKEN", None)
+    if OpenAI is None:
+        return None
+
+    try:
+        if api_key:
+            return OpenAI(api_key=api_key)
+        if hf_token:
+            try:
+                return OpenAI(base_url="https://router.huggingface.co/v1", api_key=hf_token)
+            except TypeError:
+                return OpenAI(hf_token)
+    except Exception:
+        return None
+
 
 
 # ================================
@@ -156,6 +186,9 @@ def save_rl_event(theme, reward, raw, errors):
 # ================================
 def generate_quiz(theme):
 
+    client = _get_openai_client()
+    if client is None:
+        raise RuntimeError("OpenAI client not configured. Set OPENAI_API_KEY or HF_TOKEN to enable quiz generation.")
     # 🔥 AJOUT : Feedback RL dans le prompt
     rl_feedback = build_rl_feedback()
 
@@ -167,24 +200,33 @@ def generate_quiz(theme):
         + f"\nTHÈME : {theme}\n"
     )
 
+    raw = ""
+    json_block = None
     for i in range(5):
         print(f"⏳ Tentative {i+1}/5...")
+        try:
+            resp = client.chat.completions.create(
+                model=MODEL,
+                messages=[{"role": "user", "content": prompt}],
+                max_tokens=1500,
+                temperature=0.3,
+            )
+        except Exception as e:
+            print("error calling generation API:", e)
+            time.sleep(0.5)
+            continue
 
-        resp = client.chat.completions.create(
-            model=MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=1500,
-            temperature=0.3,
-        )
+        try:
+            raw = getattr(resp.choices[0].message, "content", "") if hasattr(resp, "choices") else str(resp)
+        except Exception:
+            raw = str(resp)
 
-        raw = resp.choices[0].message.content
         json_block = extract_json(raw)
-
         if json_block:
             try:
                 json.loads(json_block)
                 return json_block, raw
-            except:
-                pass
+            except Exception:
+                continue
 
-    return json_block, raw
+    return None, raw
