@@ -201,7 +201,10 @@ describe("AddCourseDialog", () => {
       const [, init] = apiFetchSpy.mock.calls[0];
       expect(init?.method).toBe("POST");
 
-      const payload = JSON.parse(String(init?.body));
+      const payload: any = init?.body instanceof FormData
+  ? Object.fromEntries(init.body.entries())
+  : JSON.parse(String(init?.body));
+
       expect(payload.title).toBe("Développement durable");
       expect(payload.category).toBe("Développement");
       expect(payload.level).toBe("Avancé");
