@@ -201,7 +201,18 @@ export default function CourseDetail({ courseId, initial = null, onClose, onView
         {/* Existing presentation (keep unchanged) */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
           <div className="relative h-96 bg-gradient-to-br from-blue-100 to-slate-100">
-            <img src={course.image || "/placeholder-course.jpg"} alt={course.title} className="w-full h-full object-cover" />
+            <img
+  src={
+    course.image
+      ? course.image.startsWith("http")
+        ? course.image
+        : `http://127.0.0.1:8000${course.image}`
+      : "/placeholder-course.jpg"
+  }
+  alt={course.title}
+  className="w-full h-full object-cover"
+/>
+
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
               <div className="flex items-center gap-2 mb-3">

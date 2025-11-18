@@ -1,5 +1,6 @@
 import json
 import datetime
+import time
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
@@ -55,13 +56,17 @@ def login_jwt(request):
 
         now = datetime.datetime.utcnow()
         exp_dt = now + datetime.timedelta(hours=EXP_HOURS)
-
+        current_ts = time.time()
         token_payload = {
             "user_id": user.pk,
             "username": user.get_username(),
             "iat": int(now.timestamp()),
             "exp": int(exp_dt.timestamp()),
         }
+        print("BACKEND NOW:", current_ts)
+        print("PAYLOAD iat:", token_payload["iat"])
+        print("PAYLOAD exp:", token_payload["exp"])
+        print("DIFF:", token_payload["iat"] - current_ts)
 
         try:
             token = jwt.encode(token_payload, settings.SECRET_KEY, algorithm=ALGO)

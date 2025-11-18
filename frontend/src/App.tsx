@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
+import { Plus, ClipboardList  } from "lucide-react";
 import { Course, Document } from "./types";
 import Header from "./components/Header";
 import SearchFilters from "./components/SearchFilters";
@@ -9,6 +9,7 @@ import DocumentViewer from "./components/DocumentViewer";
 import AddCourseDialog from "./components/AddCourseDialog";
 import AboutSection from "./components/AboutSection";
 import Footer from "./components/Footer";
+import QuizDialog from "./components/QuizDialog"; 
 import {
   Pagination,
   PaginationContent,
@@ -21,6 +22,7 @@ import {
 import { apiFetch } from "./lib/api"
 
 export default function App() {
+  const [showQuizDialog, setShowQuizDialog] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -232,6 +234,26 @@ export default function App() {
       <main className="container mx-auto px-4 py-8">
         {/* About Section */}
         <AboutSection />
+
+
+         <div>
+      {/* Quiz Button */}
+      <div className="mb-6 flex justify-end gap-4">
+        <button
+          onClick={() => setShowQuizDialog(true)}
+          className="bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 px-6 py-3 rounded-xl shadow-md hover:shadow-lg hover:from-blue-200 hover:to-blue-300 transition-all flex items-center gap-2 border border-blue-300"
+        >
+          <ClipboardList className="w-5 h-5" />
+          Quiz
+        </button>
+      </div>
+
+      {/* Le QuizDialog */}
+      <QuizDialog
+        isOpen={showQuizDialog}
+        onClose={() => setShowQuizDialog(false)}
+      />
+    </div>
 
         {/* Search and Filters */}
         <div className="mb-8">

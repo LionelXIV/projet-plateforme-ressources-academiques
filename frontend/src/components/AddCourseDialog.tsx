@@ -28,6 +28,8 @@ export default function AddCourseDialog({ isOpen, onClose, onAddCourse, nextId }
     image: "",
   });
 
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [newDocuments, setNewDocuments] = useState<Document[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isDraggingImage, setIsDraggingImage] = useState(false);
@@ -79,13 +81,14 @@ export default function AddCourseDialog({ isOpen, onClose, onAddCourse, nextId }
     files.forEach((file) => {
       const fileUrl = URL.createObjectURL(file);
       
-      const doc: Document = {
-        id: newDocuments.length + Date.now() + Math.random(),
-        name: file.name,
-        type: getFileType(file.name),
-        size: getFileSize(file),
-        url: fileUrl,
-      };
+      const doc: Document & { file: File } = {
+  id: newDocuments.length + Date.now() + Math.random(),
+  name: file.name,
+  type: getFileType(file.name),
+  size: getFileSize(file),
+  url: fileUrl,
+  file: file, // maintenant TypeScript accepte
+};
       
       setNewDocuments(prev => [...prev, doc]);
     });
@@ -132,17 +135,19 @@ export default function AddCourseDialog({ isOpen, onClose, onAddCourse, nextId }
     if (imageFile) {
       const imageUrl = URL.createObjectURL(imageFile);
       setNewCourse({...newCourse, image: imageUrl});
+      setImageFile(imageFile);
     }
   };
 
   // Handle image input
   const handleImageInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file && file.type.startsWith('image/')) {
-      const imageUrl = URL.createObjectURL(file);
-      setNewCourse({...newCourse, image: imageUrl});
-    }
-  };
+  const file = e.target.files?.[0];
+  if (file && file.type.startsWith('image/')) {
+    const imageUrl = URL.createObjectURL(file);
+    setNewCourse({...newCourse, image: imageUrl}); 
+    setImageFile(file); 
+  }
+};
 
   // Handle image drag events
   const handleImageDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -171,63 +176,76 @@ export default function AddCourseDialog({ isOpen, onClose, onAddCourse, nextId }
 
   // Handle submit
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    if (!newCourse.title) {
-      setError("Le titre est requis.");
+  e.preventDefault();
+  setError(null);
+
+  if (!newCourse.title) {
+    setError("Le titre est requis.");
+    return;
+  }
+
+  setSubmitting(true);
+
+  try {
+    // Créer FormData pour envoyer fichiers et champs
+    const formData = new FormData();
+    formData.append("title", newCourse.title);
+    formData.append("description", newCourse.description);
+    formData.append("fullDescription", newCourse.fullDescription);
+    formData.append("instructor", newCourse.instructor);
+    formData.append("category", newCourse.category);
+    formData.append("level", newCourse.level);
+
+    // Image : soit URL, soit fichier uploadé
+    if (imageInputMode === "url") {
+      formData.append("image", newCourse.image); 
+    } else if (imageFile) {
+      formData.append("image", imageFile); 
+    }
+
+  // Documents : si tu veux les uploader
+newDocuments.forEach((doc) => {
+  if ((doc as any).file) {
+    formData.append('documents[]', (doc as any).file);
+  }
+});
+
+    // Envoyer la requête
+    const resp = await apiFetch(`/courses/creer/`, {
+      method: "POST",
+      body: formData, // FormData gère multipart/form-data
+    });
+
+    if (!resp.ok) {
+      const body = await resp.json().catch(() => ({}));
+      setError(body.error || body.detail || "Erreur lors de la création du cours.");
+      setSubmitting(false);
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const payload = {
-        title: newCourse.title,
-        description: newCourse.description,
-        fullDescription: newCourse.fullDescription,
-        instructor: newCourse.instructor,
-        category: newCourse.category,
-        level: newCourse.level,
-        image: imageInputMode === "url" ? newCourse.image : "",
-        documents: newDocuments.map(d => ({
-          name: d.name,
-          type: d.type,
-          size: d.size,
-          url: d.url || ""
-        }))
-      };
+    const created = await resp.json();
+    onAddCourse(created as Course);
 
-      const resp = await apiFetch(`/courses/creer/`, {
-        method: "POST",
-        body: JSON.stringify(payload),
-      });
+    // Reset du formulaire
+    setNewCourse({
+      title: "",
+      description: "",
+      fullDescription: "",
+      instructor: "",
+      category: "",
+      level: "",
+      image: "",
+    });
+    setImageFile(null);
+    setNewDocuments([]);
+    onClose();
+  } catch (err) {
+    setError("Erreur réseau");
+  } finally {
+    setSubmitting(false);
+  }
+};
 
-      if (!resp.ok) {
-        const body = await resp.json().catch(() => ({}));
-        setError(body.error || body.detail || "Erreur lors de la création du cours.");
-        setSubmitting(false);
-        return;
-      }
-
-      const created = await resp.json();
-      onAddCourse(created as Course);
-      setNewCourse({
-        title: "",
-        description: "",
-        fullDescription: "",
-        instructor: "",
-        category: "",
-        level: "",
-        image: "",
-        students: 0,
-      });
-      setNewDocuments([]);
-      onClose();
-    } catch (err) {
-      setError("Erreur réseau");
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const handleCancel = () => {
     setError(null);

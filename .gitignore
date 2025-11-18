@@ -25,3 +25,9 @@ build/
 # Environnement IDE
 .vscode/
 .idea/
+
+# cle Hugging Face
+.env
+
+#frontend
+frontend/node_modules/

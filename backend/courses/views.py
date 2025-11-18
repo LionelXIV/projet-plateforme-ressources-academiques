@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 import json
-
+from django.core.files.base import ContentFile
 from .models import Course, Document
 
 @csrf_exempt
@@ -12,38 +12,53 @@ def create_course(request):
     user = getattr(request, "user", None)
     if not user or not user.is_authenticated:
         return JsonResponse({"error": "authentication_required"}, status=401)
-    try:
-        payload = json.loads(request.body.decode() or "{}")
-    except Exception:
-        return JsonResponse({"error": "invalid_json"}, status=400)
-    title = payload.get("title") or ""
+
+    # Récupérer les champs du formulaire
+    title = request.POST.get("title", "").strip()
+    description = request.POST.get("description", "").strip()
+    full_description = request.POST.get("fullDescription", "").strip()
+    instructor = request.POST.get("instructor", "").strip()
+    category = request.POST.get("category", "").strip()
+    level = request.POST.get("level", "").strip()
+
     if not title:
         return JsonResponse({"error": "title_required"}, status=400)
+
+    # Image : soit URL, soit fichier uploadé
+    image = request.POST.get("image", "").strip()
+    image_file = request.FILES.get("image", None)
+
     course = Course.objects.create(
-        title=str(title)[:255],
-        description=str(payload.get("description", ""))[:500],
-        full_description=str(payload.get("fullDescription") or payload.get("full_description") or ""),
-        instructor=str(payload.get("instructor", ""))[:200],
-        category=str(payload.get("category", ""))[:100],
-        level=str(payload.get("level", ""))[:100],
-        image=str(payload.get("image") or ""),
+        title=title[:255],
+        description=description[:500],
+        full_description=full_description,
+        instructor=instructor[:200],
+        category=category[:100],
+        level=level[:100],
+        image=image if not image_file else "",  
         author=user
     )
-    docs = payload.get("documents", []) or []
-    created_docs = []
-    for d in docs:
-        doc = Document.objects.create(
-            course=course,
-            name=str(d.get("name") or "document")[:255],
-            doc_type=str(d.get("type", ""))[:64],
-            size=str(d.get("size", ""))[:64],
-            url=str(d.get("url", ""))[:2000],
-        )
-        created_docs.append(doc.to_dict())
-    result = course.to_dict()
-    result["documents"] = created_docs
-    return JsonResponse(result, status=201, json_dumps_params={'ensure_ascii': False})
 
+    # Si fichier image uploadé
+    if image_file:
+        # Si tu as ImageField: course.image.save(...)
+        course.image_file.save(image_file.name, image_file)
+        course.save()
+
+    # Documents
+    for doc_file in request.FILES.getlist('documents[]'):
+        Document.objects.create(
+        course=course,
+        name=doc_file.name,
+        doc_type=doc_file.content_type,
+        size=str(doc_file.size),
+        url=""  # si tu veux stocker une URL après upload
+    )
+
+    # Retourner le cours créé
+    result = course.to_dict()
+    result["documents"] = [d.to_dict() for d in course.documents.all()]
+    return JsonResponse(result, status=201, json_dumps_params={'ensure_ascii': False})
 @require_http_methods(["GET"])
 def list_courses(request):
     qs = Course.objects.all().order_by('-id')

@@ -8,7 +8,8 @@ class Course(models.Model):
     instructor = models.CharField(max_length=200, blank=True)
     category = models.CharField(max_length=100, blank=True)
     level = models.CharField(max_length=100, blank=True)
-    image = models.URLField(blank=True)
+    image = models.URLField(blank=True)  # Pour URL
+    image_file = models.ImageField(upload_to="course_images/", blank=True, null=True)  # Pour upload
     published_at = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL)
 
@@ -21,7 +22,7 @@ class Course(models.Model):
             "instructor": self.instructor,
             "category": self.category,
             "level": self.level,
-            "image": self.image,
+            "image": self.image or (self.image_file.url if self.image_file else ""),
             "publishedAt": self.published_at.isoformat(),
         }
 
@@ -34,6 +35,8 @@ class Document(models.Model):
     doc_type = models.CharField(max_length=64, blank=True)
     size = models.CharField(max_length=64, blank=True)
     url = models.URLField(blank=True)
+    file = models.FileField(upload_to="course_docs/", blank=True, null=True)
+
 
     def to_dict(self):
         return {
@@ -41,7 +44,7 @@ class Document(models.Model):
             "name": self.name,
             "type": self.doc_type,
             "size": self.size,
-            "url": self.url,
+            "url": self.url or (self.file.url if self.file else ""),
         }
 
     def __str__(self):
