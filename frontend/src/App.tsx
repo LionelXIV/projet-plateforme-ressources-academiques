@@ -9,7 +9,8 @@ import DocumentViewer from "./components/DocumentViewer";
 import AddCourseDialog from "./components/AddCourseDialog";
 import AboutSection from "./components/AboutSection";
 import Footer from "./components/Footer";
-import QuizDialog from "./components/QuizDialog"; 
+import QuizDialog from "./components/QuizDialog";
+import ProfilePage from "./components/ProfilePage"; 
 import {
   Pagination,
   PaginationContent,
@@ -36,6 +37,7 @@ export default function App() {
   const [showAddCourseDialog, setShowAddCourseDialog] = useState(false);
   const [showViewer, setShowViewer] = useState(false);
   const [viewerDocument, setViewerDocument] = useState<Document | null>(null);
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("jwt_token");
@@ -196,6 +198,22 @@ export default function App() {
     setSelectedCourse(updated);
   };
 
+  // If profile page is requested, show profile view
+  if (showProfile) {
+    return (
+      <>
+        <Header
+          isLoggedIn={isLoggedIn}
+          onLogin={handleLogin}
+          onLogout={handleLogout}
+          onShowProfile={() => setShowProfile(true)}
+        />
+        <ProfilePage onBack={() => setShowProfile(false)} />
+        <Footer />
+      </>
+    );
+  }
+
   // If a course is selected, show detail view
   if (selectedCourse) {
     const selectedId = Number((selectedCourse as any)?.id ?? (selectedCourse as any)?.pk ?? 0);
@@ -228,6 +246,7 @@ export default function App() {
         isLoggedIn={isLoggedIn}
         onLogin={handleLogin}
         onLogout={handleLogout}
+        onShowProfile={() => setShowProfile(true)}
       />
 
       {/* Main Content */}

@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'backend.core',
     'backend.courses',
     'backend.quizzes',
-
+    'backend.profile',
 ]
 
 MIDDLEWARE = [

@@ -54,3 +54,52 @@ export async function registerUser(username: string, password: string, email?: s
     });
     return resp;
 }
+
+export interface UserProfile {
+    id: number;
+    username: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    is_staff: boolean;
+    date_joined: string | null;
+    statistics?: {
+        courses_created: number;
+    };
+}
+
+export async function getProfile(): Promise<UserProfile> {
+    const resp = await apiFetch('/profile/');
+    if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        const err = body.error || body.detail || `HTTP ${resp.status}`;
+        throw new Error(err);
+    }
+    return resp.json();
+}
+
+export async function updateProfile(data: { email?: string; first_name?: string; last_name?: string }): Promise<UserProfile> {
+    const resp = await apiFetch('/profile/update/', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    });
+    if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        const err = body.error || body.detail || `HTTP ${resp.status}`;
+        throw new Error(err);
+    }
+    return resp.json();
+}
+
+export async function changePassword(oldPassword: string, newPassword: string): Promise<{ success: boolean; message?: string }> {
+    const resp = await apiFetch('/profile/change-password/', {
+        method: 'POST',
+        body: JSON.stringify({ old_password: oldPassword, new_password: newPassword }),
+    });
+    if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        const err = body.error || body.detail || `HTTP ${resp.status}`;
+        throw new Error(err);
+    }
+    return resp.json();
+}

@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/auth/register/', auth_jwt.register_user, name='api_register'),
     path('api/core/', include('backend.core.urls')),
     path("api/quizzes/", include("backend.quizzes.urls")),
+    path('api/profile/', include('backend.profile.urls')),
 ]
 
 if settings.DEBUG:
