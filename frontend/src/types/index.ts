@@ -4,6 +4,7 @@ export interface Document {
   type: string;
   size: string;
   url?: string;
+   file?: string;
 }
 
 export interface Course {

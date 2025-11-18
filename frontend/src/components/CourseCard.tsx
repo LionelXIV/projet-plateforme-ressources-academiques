@@ -14,10 +14,15 @@ export default function CourseCard({ course, onViewDetails }: CourseCardProps) {
     <Card className="hover:shadow-2xl transition-all duration-300 border-slate-200 overflow-hidden group">
       <div className="relative h-48 overflow-hidden bg-gradient-to-br from-blue-100 to-slate-100">
         <img
-          src={course.image}
-          alt={course.title}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-        />
+  src={
+    course.image.startsWith("http") 
+      ? course.image 
+      : `http://127.0.0.1:8000${course.image}`
+  }
+  alt={course.title}
+  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+/>
+
         <div className="absolute top-3 right-3">
           <Badge className="bg-blue-600 text-white border-0">
             {course.level}
