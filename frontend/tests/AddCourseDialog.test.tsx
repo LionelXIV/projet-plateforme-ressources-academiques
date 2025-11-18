@@ -201,17 +201,16 @@ describe("AddCourseDialog", () => {
       const [, init] = apiFetchSpy.mock.calls[0];
       expect(init?.method).toBe("POST");
 
-      const payload: any = init?.body instanceof FormData
-  ? Object.fromEntries(init.body.entries())
-  : JSON.parse(String(init?.body));
+      const formData = init?.body as FormData;
 
-      expect(payload.title).toBe("Développement durable");
-      expect(payload.category).toBe("Développement");
-      expect(payload.level).toBe("Avancé");
-      expect(payload.documents[0]).toMatchObject({
-        name: "Plan de cours 2025",
-        type: "PDF",
-      });
+// Vérifier les documents
+const documents = formData.getAll('documents[]');
+expect(documents.length).toBe(1);
+expect((documents[0] as File).name).toBe("Plan de cours 2025");
+expect((documents[0] as File).type).toBe("application/pdf");
+      expect(formData.get("title")).toBe("Développement durable");
+expect(formData.get("category")).toBe("Développement");
+expect(formData.get("level")).toBe("Avancé");
     } finally {
       apiFetchSpy.mockRestore();
     }
